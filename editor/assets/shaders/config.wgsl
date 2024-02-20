@@ -3,6 +3,7 @@ const COLOR_MULTIPLIER: vec4<f32> = vec4<f32>(0.0, 0.2, .0, 1.0);
 struct FernResult {
     pos: vec3<f32>,
     normal: vec3<f32>,
+    ao: f32,
 }
 
 struct Vertex {
@@ -16,10 +17,11 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
     let vertices_per_leaf: u32 = u32(12);
 
     var fi = f32(vertex.vertex_index % vertices_per_leaf) - 1.0;
+    let vpl3 = f32(vertices_per_leaf - 3u);
     if fi <= 0.0 {
         fi = 0.0;
-    } else if fi >= f32(vertices_per_leaf) - 3.0 {
-        fi = f32(vertices_per_leaf) - 3.0;
+    } else if fi >= vpl3 {
+        fi = vpl3;
     }
     var raw_leaf = floor(f32(vertex.vertex_index) / f32(vertices_per_leaf));
 #ifdef RENDER_BACKFACE
@@ -42,6 +44,7 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
 
     var pos = vertex.position;
     let dist = floor(fi / 2.0);
+    let rfi = dist / vpl3 * 2.0;
 
     var yaw = -0.94 * leaf;
 
@@ -79,5 +82,7 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
 
     pos.y -= 0.5;
 
-    return FernResult(pos, normal);
+    let ao = clamp(pow(rfi, 3.0) * 3.0 - 0.15, 0.04, 1.0);
+
+    return FernResult(pos, normal, ao);
 }

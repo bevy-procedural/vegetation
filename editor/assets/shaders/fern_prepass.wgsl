@@ -21,8 +21,6 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     out.world_position = mesh_position_local_to_world(model, vec4<f32>(res.pos, 1.0));
     out.clip_position_unclamped = out.position;
     out.position.z = min(out.position.z, 1.0);
-    //out.world_normal = (model * normal).xyz;
-    //out.color = res.color;
     out.instance_index = vertex.instance_index;
     return out;
 }
