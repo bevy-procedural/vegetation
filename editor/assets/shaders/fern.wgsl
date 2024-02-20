@@ -1,20 +1,13 @@
 #import bevy_pbr::mesh_functions::{get_model_matrix, mesh_position_local_to_clip}
-// we can import items from shader modules in the assets folder with a quoted path
 #import "shaders/config.wgsl"::COLOR_MULTIPLIER
+#import bevy_pbr::{mesh_view_bindings::globals, forward_io::VertexOutput}
 
-struct Camera {
-    view_pos: vec4<f32>,
-    view_proj: mat4x4<f32>,
-}
 
 struct CustomMaterial {
     color: vec4<f32>,
 };
 
-@group(1) @binding(0) var<uniform> material: CustomMaterial;
-@group(1) @binding(1) var base_color_texture: texture_2d<f32>;
-@group(1) @binding(2) var base_color_sampler: sampler;
-//@group(1) @binding(3) var<uniform> camera: Camera;
+@group(1) @binding(100) var<uniform> material: CustomMaterial;
 
 struct Vertex {
     @builtin(instance_index) instance_index: u32,
@@ -22,47 +15,25 @@ struct Vertex {
     @location(0) position: vec3<f32>,
 };
 
-struct VertexOutput {
-    @builtin(position) clip_position: vec4<f32>,
-    @location(0) color: vec4<f32>,
-    @location(1) world_normal: vec3<f32>
-};
-
 @fragment
 fn fragment(
     mesh: VertexOutput,
 ) -> @location(0) vec4<f32> {
     return material.color * COLOR_MULTIPLIER;
-
-    // let object_color: vec4<f32> = COLOR_MULTIPLIER; // textureSample(base_color_texture, base_color_sampler, mesh.uv);
-    // let light_color = vec3<f32>(1.0, 1.0, 1.0); // light.color 
-    // let light_position = vec3<f32>(0.0, 3.0, 3.0); // light.position
-
-    // let ambient_strength = 0.1;
-    // let ambient_color = light_color * ambient_strength;
-
-    // let light_dir = normalize(light_position - mesh.clip_position.xyz);
-    // let view_dir = normalize(camera.view_pos.xyz - mesh.clip_position.xyz);
-    // let half_dir = normalize(view_dir + light_dir);
-
-    // let diffuse_strength = max(dot(mesh.world_normal, light_dir), 0.0);
-    // let diffuse_color = light_color * diffuse_strength;
-
-    // let specular_strength = pow(max(dot(mesh.world_normal, half_dir), 0.0), 32.0);
-    // let specular_color = specular_strength * light_color;
-
-    // let result = (ambient_color + diffuse_color + specular_color) * object_color.xyz;
-
-    // return vec4<f32>(result, object_color.a);
-
-    //return material.color * COLOR_MULTIPLIER; // * textureSample(base_color_texture, base_color_sampler, mesh.uv) * COLOR_MULTIPLIER;
 }
 
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
-    var bendStrength = -0.05;
     var vertices_per_leaf: u32 = u32(12);
-    var w = 0.2;
+    var w = 2.0 / f32(vertices_per_leaf);
+    var h = 12.0 / f32(vertices_per_leaf);
+    var bendStrength = -0.5 / f32(vertices_per_leaf);
+
+  
+    let tooth = (f32(vertex.vertex_index) / 2.0) % 2.0;
+    if tooth <= 0.1 || tooth >= 1.4 {
+        //w = w * 0.1;
+    }
 
     var fi = f32(vertex.vertex_index % vertices_per_leaf) - 1.0;
     if fi <= 0.0 {
@@ -70,28 +41,41 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     } else if fi >= f32(vertices_per_leaf) - 3.0 {
         fi = f32(vertices_per_leaf) - 3.0;
     }
-    var leaf = floor(f32(vertex.vertex_index) / f32(vertices_per_leaf));
-    var yaw = -0.94 * leaf;
-    var pitch = -0.9 + leaf * 0.02;
-
+    
     var out: VertexOutput;
     var pos = vertex.position;
     var dist = floor(fi / 2.0);
+    var leaf = floor(f32(vertex.vertex_index) / f32(vertices_per_leaf));
+
+    var yaw = -0.94 * leaf;
+
+    var time = globals.time - (yaw % radians(360.0)) - dist * 0.3;
+    var wind = sin(time) - sin(time / 2.0) + sin(time / 4.0) - sin(time / 8.0);
+
+    var pitch = -0.9 + leaf * 0.02 + wind * 0.08;
+
     pos.x = -(fi % 2.0 - 0.5) * (f32(vertices_per_leaf) / 2.0 - 2.0 - dist) * w;
     var bentPitch = pitch + dist * bendStrength;
-    pos.z += sin(bentPitch) * dist;
-    pos.y += cos(bentPitch) * dist;
+    pos.y += cos(bentPitch) * dist * h;
+    pos.z += sin(bentPitch) * dist * h;
 
     // rotate around the y axis
-    var x = pos.x;
-    var z = pos.z;
-    pos.x = x * cos(yaw) - z * sin(yaw);
-    pos.z = x * sin(yaw) + z * cos(yaw);
+    var yaw_rotation = mat2x2<f32>(cos(yaw), sin(yaw), -sin(yaw), cos(yaw));
+    var r = pos.xz * yaw_rotation;
+    pos.x = r.x;
+    pos.z = r.y;
 
+    var normal = vec4<f32>(0.0, cos(bentPitch + radians(90.0)), sin(bentPitch + radians(90.0)), 0.0);
+    var rr = normal.xz * yaw_rotation;
+    normal.x = rr.x;
+    normal.z = rr.y;
 
     pos *= 0.2;
 
     let model = get_model_matrix(vertex.instance_index);
-    out.clip_position = mesh_position_local_to_clip(model, vec4<f32>(pos, 0.0));
+    out.position = mesh_position_local_to_clip(model, vec4<f32>(pos, 0.0));
+    out.world_position = (model * vec4<f32>(pos, 1.0)); // TODO
+    out.world_normal = (model * normal).xyz;
+    out.instance_index = vertex.instance_index;
     return out;
 }
