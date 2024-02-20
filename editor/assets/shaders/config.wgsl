@@ -4,6 +4,7 @@ struct FernResult {
     pos: vec3<f32>,
     normal: vec3<f32>,
     ao: f32,
+    uv: vec2<f32>,
 }
 
 struct Vertex {
@@ -30,8 +31,15 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
     let leaf = raw_leaf;
 #endif
 
+    var pos = vertex.position;
+    let dist = floor(fi / 2.0);
+    let rfi = dist / f32(vertices_per_leaf - 4u) * 2.0;
+
     // width of the leaf
-    let w = 2.0 / f32(vertices_per_leaf);
+    // let w = 4.0 / f32(vertices_per_leaf);
+    // let shape = 1.0 - rfi;
+    let w = 10.0 / f32(vertices_per_leaf);
+    let shape = 1.0;
     // length of the leaf; varies slightly per leaf
     let l = 12.0 / f32(vertices_per_leaf) + sin(leaf + 100.0) * 0.1;
     // first leafs are bent more
@@ -42,20 +50,17 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
         //w = w * 0.1;
     //}
 
-    var pos = vertex.position;
-    let dist = floor(fi / 2.0);
-    let rfi = dist / vpl3 * 2.0;
-
     var yaw = -0.94 * leaf;
 
     let time = t - (yaw % radians(360.0)) - dist * 0.3;
     let wind = sin(time) - sin(time / 2.0) + sin(time / 4.0) - sin(time / 8.0);
 
-    let pitch = -0.9 + leaf * 0.02 + wind * 0.08;
+    let pitch = -0.9 + leaf * 0.02; // + wind * 0.08;
     yaw += wind * 0.03;
 
-    pos.x = -(fi % 2.0 - 0.5) * (f32(vertices_per_leaf) / 2.0 - 2.0 - dist) * w;
-    let bentPitch = pitch + dist * bendStrength;
+    let lr = fi % 2.0 - 0.5;
+    pos.x = -lr * shape * w;
+    let bentPitch = pitch + dist * (bendStrength + wind * 0.01);
     pos.y += cos(bentPitch) * dist * l;
     pos.z += sin(bentPitch) * dist * l;
 
@@ -84,5 +89,7 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
 
     let ao = clamp(pow(rfi, 3.0) * 3.0 - 0.15, 0.04, 1.0);
 
-    return FernResult(pos, normal, ao);
+    let uv = vec2<f32>(lr + 0.5, 1.0 - rfi);
+
+    return FernResult(pos, normal, ao, uv);
 }

@@ -22,5 +22,6 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     out.clip_position_unclamped = out.position;
     out.position.z = min(out.position.z, 1.0);
     out.instance_index = vertex.instance_index;
+    out.uv = res.uv;
     return out;
 }

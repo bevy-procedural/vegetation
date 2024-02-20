@@ -46,15 +46,21 @@ pub fn setup_vegetation(
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip);
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0., 0., 0.]].repeat(40 * 12));
     // TODO: to enable color in PBR (used for ao)
-    mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, vec![[1., 1., 1., 1.]].repeat(40 * 12));
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_COLOR,
+        vec![[1., 1., 1., 1.]].repeat(40 * 12),
+    );
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]].repeat(40 * 12));
 
     let material = ExtendedMaterial::<StandardMaterial, FernMaterial> {
         base: StandardMaterial {
-            base_color: Color::rgb(0.1, 0.3, 0.1),
+            //base_color: Color::rgb(0.1, 0.3, 0.1),
+            base_color_texture: Some(asset_server.load("fern.png")),
             metallic: 0.4,
             perceptual_roughness: 0.2,
             reflectance: 0.0,
             double_sided: true,
+            alpha_mode: AlphaMode::Mask(0.5),
             ..default()
         },
         extension: FernMaterial { time: 0.0 },
