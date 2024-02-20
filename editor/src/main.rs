@@ -1,14 +1,48 @@
 use bevy::{
-    pbr::{wireframe::WireframeConfig, CascadeShadowConfigBuilder, ExtendedMaterial},
+    diagnostic::{
+        EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
+        SystemInformationDiagnosticsPlugin,
+    },
+    pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
     render::mesh::PrimitiveTopology,
 };
 use bevy_editor_pls::prelude::*;
-use procedural_vegetation::*;
 use std::{env, f32::consts::PI};
+
+#[cfg(not(feature = "reload"))]
+pub use components::*;
+#[cfg(not(feature = "reload"))]
+use procedural_vegetation::*;
+#[cfg(feature = "reload")]
+use procedural_vegetation_hot::*;
+#[cfg(feature = "reload")]
+#[hot_lib_reloader::hot_module(
+    dylib = "procedural_vegetation",
+    file_watch_debounce = 200,
+    lib_dir = "target/debug"
+)]
+mod procedural_vegetation_hot {
+    use bevy::prelude::*;
+    pub use components::*;
+    hot_functions_from_file!("src/lib.rs");
+
+    #[lib_updated]
+    pub fn was_updated() -> bool {}
+}
+
+fn reload_after_change() {
+    #[cfg(feature = "reload")]
+    if procedural_vegetation_hot::was_updated() {
+        println!("Reloading systems");
+    }
+}
 
 pub fn main() {
     env::set_var("RUST_BACKTRACE", "1"); // or "full"
+
+    #[cfg(feature = "reload")]
+    println!("Hello from the main module! This is a hot reloadable module.");
 
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -25,11 +59,14 @@ pub fn main() {
         .add_plugins(MaterialPlugin::<
             ExtendedMaterial<StandardMaterial, FernMaterial>,
         >::default())
-        .register_type::<Settings>()
-        .insert_resource(Settings::default())
-        .add_plugins(EditorPlugin::on_second_monitor_fullscreen(
-            EditorPlugin::default(),
+        .register_type::<FernSettings>()
+        .add_plugins((
+            EditorPlugin::on_second_monitor_fullscreen(EditorPlugin::default()),
+            FrameTimeDiagnosticsPlugin,
+            EntityCountDiagnosticsPlugin,
+            SystemInformationDiagnosticsPlugin::default(),
         ))
+        .add_systems(Update, reload_after_change)
         .add_systems(Update, bevy::window::close_on_esc)
         .add_systems(Startup, setup_vegetation)
         .add_systems(Update, update_vegetation)
@@ -41,7 +78,9 @@ pub fn setup_vegetation(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FernMaterial>>>,
     mut materials2: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>,
+    mut materials3: ResMut<Assets<ColorMaterial>>,
+    _asset_server: Res<AssetServer>,
+    mut images: ResMut<Assets<Image>>,
 ) {
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip);
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0., 0., 0.]].repeat(40 * 12));
@@ -55,7 +94,14 @@ pub fn setup_vegetation(
     let material = ExtendedMaterial::<StandardMaterial, FernMaterial> {
         base: StandardMaterial {
             //base_color: Color::rgb(0.1, 0.3, 0.1),
-            base_color_texture: Some(asset_server.load("fern.png")),
+            base_color_texture: Some(render_texture(
+                512,
+                2048,
+                &mut commands,
+                &mut meshes,
+                &mut materials3,
+                &mut images,
+            )), // Some(asset_server.load("fern.png")),
             metallic: 0.4,
             perceptual_roughness: 0.2,
             reflectance: 0.0,
@@ -101,6 +147,16 @@ pub fn setup_vegetation(
         brightness: 0.1,
     });
 
+    /*commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            color: Color::rgb(1.0, 1.0, 1.0),
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform::from_xyz(3.0, 3.0, 0.0),
+        ..default()
+    });*/
+
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             color: Color::WHITE,
@@ -109,7 +165,7 @@ pub fn setup_vegetation(
         },
         transform: Transform {
             translation: Vec3::new(0.0, 2.0, 0.0),
-            rotation: Quat::from_rotation_x(-PI / 4.),
+            rotation: Quat::from_rotation_x(-PI / 8.),
             ..default()
         },
         // The default cascade config is designed to handle large scenes.

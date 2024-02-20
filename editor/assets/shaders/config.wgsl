@@ -89,7 +89,7 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
 
     let ao = clamp(pow(rfi, 3.0) * 3.0 - 0.15, 0.04, 1.0);
 
-    let uv = vec2<f32>(lr + 0.5, 1.0 - rfi);
+    let uv = vec2<f32>(1.0 - rfi, lr + 0.5);
 
     return FernResult(pos, normal, ao, uv);
 }

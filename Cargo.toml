@@ -15,10 +15,10 @@ rust-version = "1.76.0"
 [lib]
 name = "procedural_vegetation"
 path = "src/lib.rs"
-crate-type = ["rlib"]
+crate-type = ["rlib", "dylib"]
 
 [workspace]
-members = ["editor"]
+members = ["editor", "components"]
 
 [workspace.lints.clippy]
 type_complexity = "allow"
@@ -42,8 +42,16 @@ unsafe_op_in_unsafe_fn = "warn"
 workspace = true
 
 [dependencies]
-bevy = "0.12.1"
+bevy = { version = "0.12.1", features = ["file_watcher"] }
 bevy-inspector-egui = "0.22.1"
+procedural-meshes = { path = "../meshes" }
+hot-lib-reloader = "0.7.0"
+bevy_editor_pls = "0.7.0"
+components = { path = "./components" }
+
+[features]
+default = []
+dynamic = ["bevy/dynamic_linking", "components/dynamic"]
 
 [[example]]
 name = "simple"

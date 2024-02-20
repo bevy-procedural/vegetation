@@ -1,0 +1,16 @@
+[package]
+name = "components"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { version = "0.12.1", features = ["file_watcher"] }
+bevy-inspector-egui = "0.22.1"
+bevy_editor_pls = "0.7.0"
+procedural-meshes = { path = "../../meshes" }
+hot-lib-reloader = "0.7.0"
+
+
+[features]
+default = []
+dynamic = ["bevy/dynamic_linking"]

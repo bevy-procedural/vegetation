@@ -9,12 +9,14 @@ publish = false
 bevy = { version = "0.12.1", features = ["file_watcher"] }
 bevy-inspector-egui = "0.22.1"
 bevy_editor_pls = "0.7.0"
+hot-lib-reloader = "0.7.0"
+components = { path = "../components" }
+procedural-vegetation = { path = "../" }
+procedural-meshes = { path = "../../meshes" }
 
-[dependencies.procedural-vegetation]
-path = "../"
+[features]
+default = []
+reload = ["components/dynamic", "bevy/dynamic_linking"]
 
 [lints]
 workspace = true
-
-[package.metadata]
-hot_reload_features = ["bevy/dynamic_linking", "bevy/embedded_watcher"]
