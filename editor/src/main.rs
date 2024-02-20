@@ -1,11 +1,11 @@
 use bevy::{
-    pbr::{wireframe::WireframeConfig, ExtendedMaterial},
+    pbr::{wireframe::WireframeConfig, CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
     render::mesh::PrimitiveTopology,
 };
 use bevy_editor_pls::prelude::*;
 use procedural_vegetation::*;
-use std::env;
+use std::{env, f32::consts::PI};
 
 pub fn main() {
     env::set_var("RUST_BACKTRACE", "1"); // or "full"
@@ -18,10 +18,10 @@ pub fn main() {
             }),
             ..default()
         }))
-        .insert_resource(WireframeConfig {
+        /*.insert_resource(WireframeConfig {
             global: true,
             default_color: Color::WHITE,
-        })
+        })*/
         .add_plugins(MaterialPlugin::<
             ExtendedMaterial<StandardMaterial, FernMaterial>,
         >::default())
@@ -51,9 +51,7 @@ pub fn setup_vegetation(
             base_color: Color::rgb(0.1, 0.3, 0.1),
             ..default()
         },
-        extension: FernMaterial {
-            color: Color::WHITE,
-        },
+        extension: FernMaterial { time: 0.0 },
     };
 
     commands.spawn(MaterialMeshBundle {
@@ -66,7 +64,7 @@ pub fn setup_vegetation(
     commands.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane {
             subdivisions: 0,
-            size: 1.0,
+            size: 8.0,
         })),
         material: materials2.add(StandardMaterial {
             base_color: Color::rgb(0.5, 0.5, 0.5),
@@ -75,21 +73,16 @@ pub fn setup_vegetation(
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..default()
     });
-    
 
     commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane {
-            subdivisions: 0,
-            size: 1.0,
-        })),
+        mesh: meshes.add(Mesh::from(shape::Cylinder::default())),
         material: materials2.add(StandardMaterial {
             base_color: Color::rgb(0.5, 0.5, 0.5),
             ..default()
         }),
-        transform: Transform::from_xyz(-0.5, 1.0, -0.5),
+        transform: Transform::from_xyz(-0.6, 0.7, 1.4),
         ..default()
     });
-
 
     commands.insert_resource(AmbientLight {
         color: Color::WHITE,
@@ -102,8 +95,20 @@ pub fn setup_vegetation(
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::PI / 2.0))
-            .with_translation(Vec3::new(0.0, 10.0, 0.0)),
+        transform: Transform {
+            translation: Vec3::new(0.0, 2.0, 0.0),
+            rotation: Quat::from_rotation_x(-PI / 4.),
+            ..default()
+        },
+        // The default cascade config is designed to handle large scenes.
+        // As this example has a much smaller world, we can tighten the shadow
+        // bounds for better visual quality.
+        cascade_shadow_config: CascadeShadowConfigBuilder {
+            first_cascade_far_bound: 4.0,
+            maximum_distance: 10.0,
+            ..default()
+        }
+        .into(),
         ..Default::default()
     });
 

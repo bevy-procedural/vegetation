@@ -2,7 +2,12 @@ use bevy::{
     pbr::{MaterialExtension, MaterialExtensionKey, MaterialExtensionPipeline},
     prelude::*,
     reflect::TypePath,
-    render::{mesh::MeshVertexBufferLayout, render_resource::{AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError}},
+    render::{
+        mesh::MeshVertexBufferLayout,
+        render_resource::{
+            AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
+        },
+    },
 };
 use bevy_inspector_egui::{inspector_options::ReflectInspectorOptions, InspectorOptions};
 
@@ -27,26 +32,31 @@ impl Default for Settings {
     }
 }
 
-pub fn update_vegetation(_settings: Res<Settings>) {
-    //println!("update")
-}
+pub fn update_vegetation(_settings: Res<Settings>) {}
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct FernMaterial {
     #[uniform(100)]
-    pub color: Color,
+    pub time: f32,
 }
+
+#[derive(Component)]
+pub struct Fern;
 
 impl MaterialExtension for FernMaterial {
     fn vertex_shader() -> ShaderRef {
         "shaders/fern.wgsl".into()
     }
 
+    fn prepass_vertex_shader() -> ShaderRef {
+        "shaders/fern_prepass.wgsl".into()
+    }
+
     fn specialize(
-        pipeline: &MaterialExtensionPipeline,
+        _pipeline: &MaterialExtensionPipeline,
         descriptor: &mut RenderPipelineDescriptor,
-        layout: &MeshVertexBufferLayout,
-        key: MaterialExtensionKey<Self>,
+        _layout: &MeshVertexBufferLayout,
+        _key: MaterialExtensionKey<Self>,
     ) -> Result<(), SpecializedMeshPipelineError> {
         // disable backface culling
         descriptor.primitive.cull_mode = None;
