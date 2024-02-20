@@ -49,6 +49,10 @@ pub fn setup_vegetation(
     let material = ExtendedMaterial::<StandardMaterial, FernMaterial> {
         base: StandardMaterial {
             base_color: Color::rgb(0.1, 0.3, 0.1),
+            metallic: 0.4,
+            perceptual_roughness: 0.2,
+            reflectance: 0.6,
+            double_sided: true,
             ..default()
         },
         extension: FernMaterial { time: 0.0 },

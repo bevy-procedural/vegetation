@@ -13,15 +13,7 @@ struct Vertex {
 
 
 fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
-    var vertices_per_leaf: u32 = u32(12);
-    var w = 2.0 / f32(vertices_per_leaf);
-    var h = 12.0 / f32(vertices_per_leaf);
-    var bendStrength = -0.5 / f32(vertices_per_leaf);
-
-    //let tooth = (f32(vertex.vertex_index) / 2.0) % 2.0;
-    //if tooth <= 0.1 || tooth >= 1.4 {
-        //w = w * 0.1;
-    //}
+    let vertices_per_leaf: u32 = u32(12);
 
     var fi = f32(vertex.vertex_index % vertices_per_leaf) - 1.0;
     if fi <= 0.0 {
@@ -29,32 +21,57 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
     } else if fi >= f32(vertices_per_leaf) - 3.0 {
         fi = f32(vertices_per_leaf) - 3.0;
     }
+    var raw_leaf = floor(f32(vertex.vertex_index) / f32(vertices_per_leaf));
+#ifdef RENDER_BACKFACE
+    let leaf = floor(raw_leaf / 2.0);
+#else 
+    let leaf = raw_leaf;
+#endif
+
+    // width of the leaf
+    let w = 2.0 / f32(vertices_per_leaf);
+    // length of the leaf; varies slightly per leaf
+    let l = 12.0 / f32(vertices_per_leaf) + sin(leaf + 100.0) * 0.1;
+    // first leafs are bent more
+    let bendStrength = -1.0 / f32(vertices_per_leaf);
+
+    //let tooth = (f32(vertex.vertex_index) / 2.0) % 2.0;
+    //if tooth <= 0.1 || tooth >= 1.4 {
+        //w = w * 0.1;
+    //}
 
     var pos = vertex.position;
-    var dist = floor(fi / 2.0);
-    var leaf = floor(f32(vertex.vertex_index) / f32(vertices_per_leaf));
+    let dist = floor(fi / 2.0);
 
     var yaw = -0.94 * leaf;
 
-    var time = t - (yaw % radians(360.0)) - dist * 0.3;
-    var wind = sin(time) - sin(time / 2.0) + sin(time / 4.0) - sin(time / 8.0);
+    let time = t - (yaw % radians(360.0)) - dist * 0.3;
+    let wind = sin(time) - sin(time / 2.0) + sin(time / 4.0) - sin(time / 8.0);
 
-    var pitch = -0.9 + leaf * 0.02 + wind * 0.08;
+    let pitch = -0.9 + leaf * 0.02 + wind * 0.08;
     yaw += wind * 0.03;
 
     pos.x = -(fi % 2.0 - 0.5) * (f32(vertices_per_leaf) / 2.0 - 2.0 - dist) * w;
-    var bentPitch = pitch + dist * bendStrength;
-    pos.y += cos(bentPitch) * dist * h;
-    pos.z += sin(bentPitch) * dist * h;
+    let bentPitch = pitch + dist * bendStrength;
+    pos.y += cos(bentPitch) * dist * l;
+    pos.z += sin(bentPitch) * dist * l;
 
     // rotate around the y axis
-    var yaw_rotation = mat2x2<f32>(cos(yaw), sin(yaw), -sin(yaw), cos(yaw));
-    var r = pos.xz * yaw_rotation;
+    let yaw_rotation = mat2x2<f32>(cos(yaw), sin(yaw), -sin(yaw), cos(yaw));
+    let r = pos.xz * yaw_rotation;
     pos.x = r.x;
     pos.z = r.y;
 
-    var normal = vec3<f32>(0.0, cos(bentPitch + radians(90.0)), sin(bentPitch + radians(90.0)));
-    var rr = normal.xz * yaw_rotation;
+    var normal_rot = radians(90.0);
+#ifdef RENDER_BACKFACE
+    if (raw_leaf % 2.0) <= 0.5 {
+        normal_rot = radians(-90.0);
+        pos.y -= 0.001;
+    }
+#endif
+
+    var normal = vec3<f32>(0.0, cos(bentPitch + normal_rot), sin(bentPitch + normal_rot));
+    let rr = normal.xz * yaw_rotation;
     normal.x = rr.x;
     normal.z = rr.y;
 

@@ -14,15 +14,15 @@ struct CustomMaterial {
 
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
-    var out: VertexOutput;
     let res = fern_vertices(globals.time, vertex);
-
     let model = get_model_matrix(vertex.instance_index);
+    var out: VertexOutput;
     out.position = mesh_position_local_to_clip(model, vec4<f32>(res.pos, 1.0));
     out.world_position = mesh_position_local_to_world(model, vec4<f32>(res.pos, 1.0));
     out.clip_position_unclamped = out.position;
     out.position.z = min(out.position.z, 1.0);
     //out.world_normal = (model * normal).xyz;
+    //out.color = res.color;
     out.instance_index = vertex.instance_index;
     return out;
 }
