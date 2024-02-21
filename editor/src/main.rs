@@ -1,11 +1,15 @@
 use bevy::{
+    core::{Pod, Zeroable},
     diagnostic::{
         EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
         SystemInformationDiagnosticsPlugin,
     },
+    ecs::query::QueryItem,
     pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
-    render::mesh::PrimitiveTopology,
+    render::{
+        extract_component::ExtractComponent, mesh::PrimitiveTopology, view::NoFrustumCulling,
+    },
 };
 use bevy_editor_pls::prelude::*;
 use std::{env, f32::consts::PI};
@@ -87,42 +91,45 @@ pub fn setup_vegetation(
     // TODO: to enable color in PBR (used for ao)
     mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, vec![[1., 1., 1., 1.]].repeat(count));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]].repeat(count));
-    mesh.insert_attribute(
+    /*mesh.insert_attribute(
         Mesh::ATTRIBUTE_TANGENT,
         vec![[0., 0., 0., 0.]].repeat(count),
-    );
+    );*/
+
+    let fern = Some(render_texture(
+        512,
+        2048,
+        &mut commands,
+        &mut meshes,
+        &mut materials3,
+        &mut images,
+        [
+            Color::rgb(0.1, 0.2, 0.0),
+            Color::rgb(0.05, 0.3, 0.0),
+            Color::rgb(0.05, 0.36, 0.05),
+        ],
+        1,
+    ));
+    let fern_normal = None;
+    /*Some(render_texture(
+        512,
+        2048,
+        &mut commands,
+        &mut meshes,
+        &mut materials3,
+        &mut images,
+        [
+            Color::rgb(0.0, 0.0, 1.0),
+            Color::rgb(0.4, 0.0, 1.0),
+            Color::rgb(0.0, 0.0, 1.0),
+        ],
+        2,
+    ));*/
 
     let material = ExtendedMaterial::<StandardMaterial, FernMaterial> {
         base: StandardMaterial {
-            //base_color: Color::rgb(0.1, 0.3, 0.1),
-            base_color_texture: Some(render_texture(
-                512,
-                2048,
-                &mut commands,
-                &mut meshes,
-                &mut materials3,
-                &mut images,
-                [
-                    Color::rgb(0.1, 0.2, 0.0),
-                    Color::rgb(0.0, 0.5, 0.0),
-                    Color::rgb(0.0, 0.5, 0.0),
-                ],
-                1,
-            )),
-            normal_map_texture: Some(render_texture(
-                512,
-                2048,
-                &mut commands,
-                &mut meshes,
-                &mut materials3,
-                &mut images,
-                [
-                    Color::rgb(0.0, 0.0, 1.0),
-                    Color::rgb(0.4, 0.0, 1.0),
-                    Color::rgb(0.0, 0.0, 1.0),
-                ],
-                2,
-            )),
+            base_color_texture: fern,
+            normal_map_texture: fern_normal,
             metallic: 0.4,
             perceptual_roughness: 0.2,
             reflectance: 0.0,
@@ -133,17 +140,38 @@ pub fn setup_vegetation(
         extension: FernMaterial { time: 0.0 },
     };
 
-    commands.spawn(MaterialMeshBundle {
-        mesh: meshes.add(mesh),
-        transform: Transform::from_xyz(0.0, 0.5, 0.0),
-        material: materials.add(material),
-        ..default()
-    });
+    // TODO: use instancing https://github.com/bevyengine/bevy/blob/release-0.12.1/examples/shader/shader_instancing.rs#L104
 
-    commands.spawn(PbrBundle {
+    for i in 0..30 {
+        let s = (i as f32 * 100.0).sin() + 2.0;
+
+        commands.spawn((
+            MaterialMeshBundle {
+                mesh: meshes.add(mesh.clone()),
+                transform: Transform::from_xyz(
+                    ((1012.0 * i as f32).sin() * 100000.0) % 10.0,
+                    s / 2.0,
+                    ((432.0 * i as f32).sin() * 100000.0) % 10.0,
+                )
+                .with_scale(Vec3::splat(s)),
+                material: materials.add(material.clone()),
+                ..default()
+            },
+            // NOTE: Frustum culling is done based on the Aabb of the Mesh and the GlobalTransform.
+            // As the cube is at the origin, if its Aabb moves outside the view frustum, all the
+            // instanced cubes will be culled.
+            // The InstanceMaterialData contains the 'GlobalTransform' information for this custom
+            // instancing, and that is not taken into account with the built-in frustum culling.
+            // We must disable the built-in frustum culling by adding the `NoFrustumCulling` marker
+            // component to avoid incorrect culling.
+            NoFrustumCulling,
+        ));
+    }
+
+    commands.spawn((PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane {
             subdivisions: 0,
-            size: 8.0,
+            size: 100.0,
         })),
         material: materials2.add(StandardMaterial {
             base_color: Color::rgb(0.5, 0.5, 0.5),
@@ -151,7 +179,7 @@ pub fn setup_vegetation(
         }),
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..default()
-    });
+    },));
 
     commands.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Cylinder::default())),
@@ -186,15 +214,17 @@ pub fn setup_vegetation(
         },
         transform: Transform {
             translation: Vec3::new(0.0, 2.0, 0.0),
-            rotation: Quat::from_rotation_x(-PI / 8.),
+            rotation: Quat::from_rotation_x(-PI / 3.),
             ..default()
         },
         // The default cascade config is designed to handle large scenes.
         // As this example has a much smaller world, we can tighten the shadow
         // bounds for better visual quality.
         cascade_shadow_config: CascadeShadowConfigBuilder {
-            first_cascade_far_bound: 4.0,
-            maximum_distance: 10.0,
+            first_cascade_far_bound: 5.0,
+            num_cascades: 20,
+            minimum_distance: 0.001,
+            maximum_distance: 300.0,
             ..default()
         }
         .into(),

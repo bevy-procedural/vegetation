@@ -19,7 +19,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     out.world_normal = (model * vec4<f32>(res.normal, 0.0)).xyz;
     out.color = vec4<f32>(res.ao, res.ao, res.ao, 1.0);
     out.instance_index = vertex.instance_index;
-    out.world_tangent = mesh_tangent_local_to_world(model, res.tangent, vertex.instance_index);
+    //out.world_tangent = mesh_tangent_local_to_world(model, res.tangent, vertex.instance_index);
     out.uv = res.uv;
     return out;
 }
