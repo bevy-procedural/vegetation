@@ -1,15 +1,11 @@
 use bevy::{
-    core::{Pod, Zeroable},
     diagnostic::{
         EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
         SystemInformationDiagnosticsPlugin,
     },
-    ecs::query::QueryItem,
     pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
-    render::{
-        extract_component::ExtractComponent, mesh::PrimitiveTopology, view::NoFrustumCulling,
-    },
+    render::{mesh::PrimitiveTopology, view::NoFrustumCulling},
 };
 use bevy_editor_pls::prelude::*;
 use std::{env, f32::consts::PI};
@@ -217,14 +213,14 @@ pub fn setup_vegetation(
             rotation: Quat::from_rotation_x(-PI / 3.),
             ..default()
         },
-        // The default cascade config is designed to handle large scenes.
-        // As this example has a much smaller world, we can tighten the shadow
-        // bounds for better visual quality.
+        // High-Quality Shadows!
         cascade_shadow_config: CascadeShadowConfigBuilder {
-            first_cascade_far_bound: 5.0,
-            num_cascades: 20,
+            num_cascades: 10,
             minimum_distance: 0.001,
-            maximum_distance: 300.0,
+            maximum_distance: 1000.0,
+            first_cascade_far_bound: 1.0,
+            overlap_proportion: 0.2,
+
             ..default()
         }
         .into(),
