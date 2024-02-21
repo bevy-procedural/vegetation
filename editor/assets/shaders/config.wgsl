@@ -51,7 +51,8 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
         //w = w * 0.1;
     //}
 
-    var yaw = -0.94 * leaf;
+    let golden_angle = 2.39996322972865332;
+    var yaw = golden_angle * leaf;
 
     let time = t - (yaw % radians(360.0)) - dist * 0.3;
     let wind = sin(time) - sin(time / 2.0) + sin(time / 4.0) - sin(time / 8.0);
