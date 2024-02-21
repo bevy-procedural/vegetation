@@ -4,11 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.12.1", features = ["file_watcher"] }
+bevy = { version = "0.12.1", features = [
+    "file_watcher",
+    "ktx2",
+    "zstd",
+    "basis-universal",
+] }
 bevy-inspector-egui = "0.22.1"
 bevy_editor_pls = "0.7.0"
 procedural-meshes = { path = "../../meshes" }
 hot-lib-reloader = "0.7.0"
+basis-universal = "0.3.1"
 
 
 [features]

@@ -5,7 +5,7 @@ use bevy::{
     },
     pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
-    render::{mesh::PrimitiveTopology, view::NoFrustumCulling},
+    render::{mesh::PrimitiveTopology, renderer::RenderDevice, view::NoFrustumCulling},
 };
 use bevy_editor_pls::prelude::*;
 use std::{env, f32::consts::PI};
@@ -81,6 +81,7 @@ pub fn setup_vegetation(
     mut materials2: ResMut<Assets<StandardMaterial>>,
     mut materials3: ResMut<Assets<ColorMaterial>>,
     mut images: ResMut<Assets<Image>>,
+    device: Res<RenderDevice>,
 ) {
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip);
     let count = 40 * 12;
@@ -106,6 +107,7 @@ pub fn setup_vegetation(
             Color::rgb(0.05, 0.36, 0.05),
         ],
         1,
+        device,
     ));
     let fern_normal = None;
     /*Some(render_texture(
@@ -120,7 +122,7 @@ pub fn setup_vegetation(
             Color::rgb(0.4, 0.0, 1.0),
             Color::rgb(0.0, 0.0, 1.0),
         ],
-        2,
+        2,device
     ));*/
 
     let material = ExtendedMaterial::<StandardMaterial, FernMaterial> {

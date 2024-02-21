@@ -7,7 +7,7 @@ use bevy::{
         mesh::MeshVertexBufferLayout,
         render_resource::{
             AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
-        },
+        }, 
     },
 };
 use bevy_inspector_egui::{inspector_options::ReflectInspectorOptions, InspectorOptions};
@@ -77,6 +77,8 @@ pub struct FernSettings {
 
     pub meshes: Vec<AssetId<Mesh>>,
     pub camera: Option<Entity>,
+    pub render_target: Option<Handle<Image>>,
+    pub compressed_target: Option<Handle<Image>>,
 }
 
 impl Default for FernSettings {
@@ -99,6 +101,8 @@ impl Default for FernSettings {
             height: 512,
             meshes: vec![],
             camera: None,
+            compressed_target: None,
+            render_target: None,
         }
     }
 }

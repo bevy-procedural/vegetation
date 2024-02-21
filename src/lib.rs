@@ -1,12 +1,104 @@
-use bevy::{prelude::*, render::mesh::shape::Cube};
+use bevy::{
+    prelude::*,
+    render::{
+        mesh::shape::Cube,
+        texture::{CompressedImageFormats, ImageSampler, ImageType},
+    },
+};
 use components::*;
 use procedural_meshes::{fill::MyFill, mesh::MyMesh, *};
 
+fn compress_to_basis(image: &Image) -> Vec<u8> {
+    // from bevy::render::texture::CompressedImageSaver:
+
+    // PERF: this should live inside the future, but CompressorParams and Compressor are not Send / can't be owned by the BoxedFuture (which _is_ Send)
+    let mut compressor_params = basis_universal::CompressorParams::new();
+    compressor_params.set_basis_format(basis_universal::BasisTextureFormat::UASTC4x4);
+    compressor_params.set_generate_mipmaps(true);
+    let is_srgb = image.texture_descriptor.format.is_srgb();
+    let color_space = if is_srgb {
+        basis_universal::ColorSpace::Srgb
+    } else {
+        basis_universal::ColorSpace::Linear
+    };
+    compressor_params.set_color_space(color_space);
+    compressor_params.set_uastc_quality_level(basis_universal::UASTC_QUALITY_DEFAULT);
+    compressor_params.set_etc1s_quality_level(basis_universal::ETC1S_QUALITY_DEFAULT);
+
+    let mut source_image = compressor_params.source_image_mut(0);
+    let size = image.size();
+    source_image.init(&image.data, size.x, size.y, 4);
+
+    let mut compressor = basis_universal::Compressor::new(4);
+    // SAFETY: the CompressorParams are "valid" to the best of our knowledge. The basis-universal
+    // library bindings note that invalid params might produce undefined behavior.
+    unsafe {
+        compressor.init(&compressor_params);
+        compressor.process().unwrap();
+    }
+    let compressed_basis_data = compressor.basis_file().to_vec();
+
+    //println!("Original data size: {}", image.data.len());
+    //println!("Compressed data size: {}", compressed_basis_data.len());
+
+    return compressed_basis_data;
+}
+
 #[no_mangle]
-pub fn update_vegetation_off(query: Query<&FernSettings>, mut cameras: Query<&mut Camera>) {
+pub fn update_vegetation_off(
+    query: Query<&FernSettings>,
+    mut cameras: Query<&mut Camera>,
+    mut images: ResMut<Assets<Image>>,
+    mut materials: ResMut<Assets<bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial>>>,
+    device: Res<bevy::render::renderer::RenderDevice>,
+) {
     for settings in query.iter() {
         if let Ok(mut cam) = cameras.get_mut(settings.camera.unwrap()) {
+            if !cam.is_active {
+                continue;
+            }
             cam.is_active = false;
+
+            /*
+            println!("Compressing image");
+            let is_srgb;
+            let compressed_basis_data = {
+                let image = images.get(settings.render_target.clone().unwrap()).unwrap();
+                is_srgb = image.texture_descriptor.format.is_srgb();
+                compress_to_basis(&image)
+            };
+            /*let target = images
+            .get_mut(settings.compressed_target.clone().unwrap())
+            .unwrap();*/
+            let supported_compressed_formats =
+                CompressedImageFormats::from_features(device.features());
+            let comp_img = Image::from_buffer(
+                &compressed_basis_data,
+                ImageType::Format(bevy::render::texture::ImageFormat::Basis),
+                supported_compressed_formats,
+                is_srgb,
+                ImageSampler::linear(),
+            )
+            .unwrap();
+            //target.data = comp_img.data;
+
+            // TODO: leaks memory
+
+            /*let mut file = std::fs::OpenOptions::new()
+                .create(true)
+                .write(true)
+                .open("test.basis")
+                .unwrap();
+            use std::io::Write;
+            file.write_all(&compressed_basis_data).unwrap();*/
+
+            let new_handle = images.add(comp_img);
+
+            for m in materials.iter_mut() {
+                let x = m.1;
+                x.base.base_color_texture = Some(settings.render_target.clone().unwrap());
+                x.base.base_color_texture = Some(new_handle.clone());
+            }*/
         }
     }
 }
@@ -162,6 +254,7 @@ pub fn render_texture(
     images: &mut ResMut<Assets<Image>>,
     colors: [Color; 3],
     layer: u8,
+    device: Res<bevy::render::renderer::RenderDevice>,
 ) -> Handle<Image> {
     let mut settings = FernSettings {
         width,
@@ -177,6 +270,22 @@ pub fn render_texture(
     let mesh3 = meshes.add(Mesh::from(Cube { size: 1.0 }));
     settings.meshes = vec![mesh.id(), mesh2.id(), mesh3.id()];
     settings.camera = Some(camera_id);
+    settings.render_target = Some(img.clone());
+
+    /*
+    let supported_compressed_formats = CompressedImageFormats::from_features(device.features());
+    let image = images.get(img.clone()).unwrap();
+    let compressed_basis_data = compress_to_basis(&image);
+    let comp_img = Image::from_buffer(
+        &compressed_basis_data,
+        ImageType::Format(bevy::render::texture::ImageFormat::Basis),
+        supported_compressed_formats,
+        image.texture_descriptor.format.is_srgb(),
+        ImageSampler::linear(),
+    )
+    .unwrap();
+    let image_handle = images.add(comp_img);
+    settings.compressed_target = Some(image_handle.clone());*/
 
     commands
         .spawn((
@@ -209,5 +318,6 @@ pub fn render_texture(
                 layer,
             ));
         });
+
     return img;
 }

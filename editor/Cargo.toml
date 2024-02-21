@@ -6,13 +6,19 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
-bevy = { version = "0.12.1", features = ["file_watcher"] }
+bevy = { version = "0.12.1", features = [
+    "file_watcher",
+    "ktx2",
+    "zstd",
+    "basis-universal",
+] }
 bevy-inspector-egui = "0.22.1"
 bevy_editor_pls = "0.7.0"
 hot-lib-reloader = "0.7.0"
 components = { path = "../components" }
 procedural-vegetation = { path = "../" }
 procedural-meshes = { path = "../../meshes" }
+basis-universal = "0.3.1"
 
 [features]
 default = []
