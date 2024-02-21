@@ -1,4 +1,4 @@
-#import bevy_pbr::mesh_functions::{get_model_matrix, mesh_position_local_to_world,mesh_position_local_to_clip}
+#import bevy_pbr::mesh_functions::{get_model_matrix, mesh_tangent_local_to_world, mesh_position_local_to_world,mesh_position_local_to_clip}
 #import "shaders/config.wgsl"::{fern_vertices, Vertex}
 #import bevy_pbr::{mesh_view_bindings::globals, forward_io::VertexOutput}
 
@@ -16,10 +16,10 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     var out = VertexOutput();
     out.position = mesh_position_local_to_clip(model, vec4<f32>(res.pos, 1.0));
     out.world_position = mesh_position_local_to_world(model, vec4<f32>(res.pos, 1.0));
-    out.world_position = (model * vec4<f32>(res.pos, 1.0));
     out.world_normal = (model * vec4<f32>(res.normal, 0.0)).xyz;
     out.color = vec4<f32>(res.ao, res.ao, res.ao, 1.0);
     out.instance_index = vertex.instance_index;
+    out.world_tangent = mesh_tangent_local_to_world(model, res.tangent, vertex.instance_index);
     out.uv = res.uv;
     return out;
 }

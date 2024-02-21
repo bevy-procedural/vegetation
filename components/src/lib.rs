@@ -42,6 +42,8 @@ impl MaterialExtension for FernMaterial {
     }
 }
 
+
+
 #[derive(Reflect, Component, InspectorOptions)]
 #[reflect(Component, InspectorOptions)]
 pub struct FernSettings {
@@ -76,14 +78,14 @@ pub struct FernSettings {
     #[inspector(min = 8, max = 4096)]
     pub height: u32,
 
-    pub fern_mesh: Option<AssetId<Mesh>>,
+    pub meshes: Vec<AssetId<Mesh>>,
 }
 
 impl Default for FernSettings {
     fn default() -> Self {
         FernSettings {
-            stem_w: 0.02,
-            stem_w2: 0.005,
+            stem_w: 0.08,
+            stem_w2: 0.008,
             leaflets1: 35,
             leaflets2: 10,
             leaflet_spacing: 1.6,
@@ -97,7 +99,7 @@ impl Default for FernSettings {
 
             width: 512,
             height: 512,
-            fern_mesh: None,
+            meshes: vec![],
         }
     }
 }

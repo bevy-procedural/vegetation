@@ -79,17 +79,18 @@ pub fn setup_vegetation(
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FernMaterial>>>,
     mut materials2: ResMut<Assets<StandardMaterial>>,
     mut materials3: ResMut<Assets<ColorMaterial>>,
-    _asset_server: Res<AssetServer>,
     mut images: ResMut<Assets<Image>>,
 ) {
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0., 0., 0.]].repeat(40 * 12));
+    let count = 40 * 12;
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0., 0., 0.]].repeat(count));
     // TODO: to enable color in PBR (used for ao)
+    mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, vec![[1., 1., 1., 1.]].repeat(count));
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]].repeat(count));
     mesh.insert_attribute(
-        Mesh::ATTRIBUTE_COLOR,
-        vec![[1., 1., 1., 1.]].repeat(40 * 12),
+        Mesh::ATTRIBUTE_TANGENT,
+        vec![[0., 0., 0., 0.]].repeat(count),
     );
-    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]].repeat(40 * 12));
 
     let material = ExtendedMaterial::<StandardMaterial, FernMaterial> {
         base: StandardMaterial {
@@ -101,7 +102,27 @@ pub fn setup_vegetation(
                 &mut meshes,
                 &mut materials3,
                 &mut images,
-            )), // Some(asset_server.load("fern.png")),
+                [
+                    Color::rgb(0.1, 0.2, 0.0),
+                    Color::rgb(0.0, 0.5, 0.0),
+                    Color::rgb(0.0, 0.5, 0.0),
+                ],
+                1,
+            )),
+            normal_map_texture: Some(render_texture(
+                512,
+                2048,
+                &mut commands,
+                &mut meshes,
+                &mut materials3,
+                &mut images,
+                [
+                    Color::rgb(0.0, 0.0, 1.0),
+                    Color::rgb(0.4, 0.0, 1.0),
+                    Color::rgb(0.0, 0.0, 1.0),
+                ],
+                2,
+            )),
             metallic: 0.4,
             perceptual_roughness: 0.2,
             reflectance: 0.0,

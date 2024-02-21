@@ -5,6 +5,7 @@ struct FernResult {
     normal: vec3<f32>,
     ao: f32,
     uv: vec2<f32>,
+    tangent: vec4<f32>
 }
 
 struct Vertex {
@@ -83,13 +84,16 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
     normal.x = rr.x;
     normal.z = rr.y;
 
-    pos *= 0.2;
+    var tangent = vec4<f32>(0.0, cos(bentPitch), sin(bentPitch), 1.0);
+    let rrr = tangent.xz * yaw_rotation;
+    tangent.x = rrr.x;
+    tangent.z = rrr.y;
 
+    pos *= 0.2;
     pos.y -= 0.5;
 
     let ao = clamp(pow(rfi, 3.0) * 3.0 - 0.15, 0.04, 1.0);
-
     let uv = vec2<f32>(1.0 - rfi, lr + 0.5);
 
-    return FernResult(pos, normal, ao, uv);
+    return FernResult(pos, normal, ao, uv, tangent);
 }

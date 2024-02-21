@@ -1,28 +1,54 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::mesh::shape::Cube, transform};
 use components::*;
 use procedural_meshes::{fill::MyFill, mesh::MyMesh, *};
 
 #[no_mangle]
-pub fn update_vegetation(query: Query<&FernSettings>, mut assets: ResMut<Assets<Mesh>>) {
-    for settings in query.iter() {
+pub fn update_vegetation(
+    query: Query<(&Children, Entity, &FernSettings)>,
+    //q_name: Query<&Name>,
+    mut assets: ResMut<Assets<Mesh>>,
+) {
+    for (children, _, settings) in query.iter() {
         //println!("Updating fern mesh");
-        let fern = fern_mesh(settings);
-        let mesh = assets.get_mut(settings.fern_mesh.unwrap()).unwrap();
+        let fern = fern_mesh(settings, FernPart::Stem);
+        let mesh = assets.get_mut(settings.meshes[0]).unwrap();
         fern.bevy_set(mesh);
+
+        let fern = fern_mesh(settings, FernPart::LeafletTop);
+        let mesh = assets.get_mut(settings.meshes[1]).unwrap();
+        fern.bevy_set(mesh);
+
+        let fern = fern_mesh(settings, FernPart::LeafletBottom);
+        let mesh = assets.get_mut(settings.meshes[2]).unwrap();
+        fern.bevy_set(mesh);
+
+        // get children of entity
+        /*for child in children.iter() {
+            let name = q_name.get(*child).unwrap().as_str();
+        }*/
     }
 }
 
-fn fern_mesh(settings: &FernSettings) -> MyMesh {
+#[derive(Debug, Reflect, Component, PartialEq)]
+enum FernPart {
+    Stem,
+    LeafletTop,
+    LeafletBottom,
+}
+
+fn fern_mesh(settings: &FernSettings, part: FernPart) -> MyMesh {
     let mut fill = MyFill::new(0.0001);
     fill.draw(|builder| {
         let stem_w = settings.stem_w;
         let stem_w2 = settings.stem_w2;
 
-        builder.begin(point(0.0, stem_w));
-        builder.line_to(point(1.0, stem_w2));
-        builder.line_to(point(1.0, -stem_w2));
-        builder.line_to(point(0.0, -stem_w));
-        builder.end(true);
+        if part == FernPart::Stem {
+            builder.begin(point(0.0, stem_w));
+            builder.line_to(point(1.0, stem_w2));
+            builder.line_to(point(1.0, -stem_w2));
+            builder.line_to(point(0.0, -stem_w));
+            builder.end(true);
+        }
 
         fn leaflet(
             start: Point,
@@ -33,6 +59,7 @@ fn fern_mesh(settings: &FernSettings) -> MyMesh {
             dir: f32,
             builder: &mut fill::Builder,
             settings: &FernSettings,
+            part: &FernPart,
         ) {
             let c0 = curve;
             let a0 = leaflet_len / ((leaflets + 1) as f32 * 0.5);
@@ -46,22 +73,39 @@ fn fern_mesh(settings: &FernSettings) -> MyMesh {
                 let thinning = settings.thinning;
                 let stomp = settings.stomp;
 
-                builder.begin(p);
-                builder.quadratic_bezier_to(
-                    p + vector(l * stomp, thinning * a * (-0.5 + slant)),
-                    p + vector(l, thinning * a * (0.5 + slant)),
-                );
-                builder.quadratic_bezier_to(p + vector(l, thinning * a * (1.0 + slant)), p + step);
-                builder.end(true);
+                if *part == FernPart::LeafletTop {
+                    builder.begin(p);
+                    builder.quadratic_bezier_to(
+                        p + vector(l * stomp, thinning * a * (-0.5 + slant)),
+                        p + vector(l, thinning * a * (0.5 + slant)),
+                    );
+                    builder
+                        .quadratic_bezier_to(p + vector(l, thinning * a * (1.0 + slant)), p + step);
+                    builder.end(true);
+                }
 
-                let l2 = -(l - 2.0 * c0);
-                builder.begin(p);
-                builder.quadratic_bezier_to(
-                    p + vector(l2 * stomp, thinning * a * (-0.5 + slant)),
-                    p + vector(l2, thinning * a * (0.5 + slant)),
-                );
-                builder.quadratic_bezier_to(p + vector(l2, thinning * a * (1.0 + slant)), p + step);
-                builder.end(true);
+                if *part == FernPart::LeafletBottom {
+                    let l2 = -(l - 2.0 * c0);
+                    builder.begin(p);
+                    builder.quadratic_bezier_to(
+                        p + vector(l2 * stomp, thinning * a * (-0.5 + slant)),
+                        p + vector(l2, thinning * a * (0.5 + slant)),
+                    );
+                    builder.quadratic_bezier_to(
+                        p + vector(l2, thinning * a * (1.0 + slant)),
+                        p + step,
+                    );
+                    builder.end(true);
+                }
+
+                /*if *part == FernPart::Stem {
+                    let stemlet_width = vector(0.0015, 0.0);
+                    builder.begin(p + stemlet_width);
+                    builder.line_to(p + step + stemlet_width);
+                    builder.line_to(p + step - stemlet_width);
+                    builder.line_to(p - stemlet_width);
+                    builder.end(true);
+                }*/
 
                 p += step;
             }
@@ -83,6 +127,7 @@ fn fern_mesh(settings: &FernSettings) -> MyMesh {
                 dir,
                 builder,
                 settings,
+                &part,
             );
             px += l0 * leaflet_len * settings.leaflet_spacing * 0.5;
         }
@@ -104,29 +149,53 @@ pub fn render_texture(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
     images: &mut ResMut<Assets<Image>>,
+    colors: [Color; 3],
+    layer: u8,
 ) -> Handle<Image> {
     let mut settings = FernSettings {
         width,
         height,
         ..default()
     };
-    let fern = fern_mesh(&settings);
-    let fern_mesh = fern.to_bevy();
+    //let fern = fern_mesh(&settings);
+    //let fern_mesh = fern.to_bevy();
 
-    let (img, layer) = render_to_texture(width, height, commands, images);
-    let mesh = meshes.add(fern_mesh);
-    let id = mesh.id();
-    settings.fern_mesh = Some(id);
+    let (img, layer) = render_to_texture(width, height, commands, images, layer);
+    let mesh = meshes.add(Mesh::from(Cube { size: 1.0 }));
+    let mesh2 = meshes.add(Mesh::from(Cube { size: 1.0 }));
+    let mesh3 = meshes.add(Mesh::from(Cube { size: 1.0 }));
+    settings.meshes = vec![mesh.id(), mesh2.id(), mesh3.id()];
 
-    commands.spawn((
-        ColorMesh2dBundle {
-            mesh: mesh.into(),
-            material: materials.add(ColorMaterial::from(Color::rgba(0.0, 0.5, 0.0, 1.0))),
-            ..default()
-        },
-        layer,
-        Name::new("fern"),
-        settings,
-    ));
+    commands
+        .spawn((
+            ColorMesh2dBundle {
+                mesh: mesh.into(),
+                material: materials.add(ColorMaterial::from(colors[0])),
+                ..default()
+            },
+            layer,
+            Name::new("fern"),
+            settings,
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                ColorMesh2dBundle {
+                    mesh: mesh2.clone().into(),
+                    material: materials.add(ColorMaterial::from(colors[1])),
+                    transform: Transform::from_xyz(0.0, -0.01, 0.0),
+                    ..default()
+                },
+                layer,
+            ));
+            parent.spawn((
+                ColorMesh2dBundle {
+                    mesh: mesh3.into(),
+                    material: materials.add(ColorMaterial::from(colors[2])),
+                    transform: Transform::from_xyz(0.0, -0.01, 0.0),
+                    ..default()
+                },
+                layer,
+            ));
+        });
     return img;
 }
