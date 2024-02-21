@@ -69,6 +69,7 @@ pub fn main() {
         .add_systems(Update, reload_after_change)
         .add_systems(Update, bevy::window::close_on_esc)
         .add_systems(Startup, setup_vegetation)
+        .add_systems(Update, update_vegetation_off.before(update_vegetation))
         .add_systems(Update, update_vegetation)
         .run();
 }
@@ -84,13 +85,13 @@ pub fn setup_vegetation(
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip);
     let count = 40 * 12;
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0., 0., 0.]].repeat(count));
-    // TODO: to enable color in PBR (used for ao)
+    // TODO: to enable color in PBR (used for ao). Is there a way without adding an attribute?
     mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, vec![[1., 1., 1., 1.]].repeat(count));
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]].repeat(count));
-    /*mesh.insert_attribute(
+    mesh.insert_attribute(
         Mesh::ATTRIBUTE_TANGENT,
         vec![[0., 0., 0., 0.]].repeat(count),
-    );*/
+    );
 
     let fern = Some(render_texture(
         512,
@@ -215,10 +216,10 @@ pub fn setup_vegetation(
         },
         // High-Quality Shadows!
         cascade_shadow_config: CascadeShadowConfigBuilder {
-            num_cascades: 10,
+            num_cascades: 4,
             minimum_distance: 0.001,
-            maximum_distance: 1000.0,
-            first_cascade_far_bound: 1.0,
+            maximum_distance: 30.0,
+            first_cascade_far_bound: 10.0,
             overlap_proportion: 0.2,
 
             ..default()

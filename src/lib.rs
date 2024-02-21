@@ -1,14 +1,27 @@
-use bevy::{prelude::*, render::mesh::shape::Cube, transform};
+use bevy::{prelude::*, render::mesh::shape::Cube};
 use components::*;
 use procedural_meshes::{fill::MyFill, mesh::MyMesh, *};
 
 #[no_mangle]
+pub fn update_vegetation_off(query: Query<&FernSettings>, mut cameras: Query<&mut Camera>) {
+    for settings in query.iter() {
+        if let Ok(mut cam) = cameras.get_mut(settings.camera.unwrap()) {
+            cam.is_active = false;
+        }
+    }
+}
+
+#[no_mangle]
 pub fn update_vegetation(
-    query: Query<(&Children, Entity, &FernSettings)>,
-    //q_name: Query<&Name>,
+    query: Query<&FernSettings, Changed<FernSettings>>,
     mut assets: ResMut<Assets<Mesh>>,
+    mut cameras: Query<&mut Camera>,
 ) {
-    for (children, _, settings) in query.iter() {
+    for settings in query.iter() {
+        if let Ok(mut cam) = cameras.get_mut(settings.camera.unwrap()) {
+            cam.is_active = true;
+        }
+
         //println!("Updating fern mesh");
         let fern = fern_mesh(settings, FernPart::Stem);
         let mesh = assets.get_mut(settings.meshes[0]).unwrap();
@@ -21,11 +34,6 @@ pub fn update_vegetation(
         let fern = fern_mesh(settings, FernPart::LeafletBottom);
         let mesh = assets.get_mut(settings.meshes[2]).unwrap();
         fern.bevy_set(mesh);
-
-        // get children of entity
-        /*for child in children.iter() {
-            let name = q_name.get(*child).unwrap().as_str();
-        }*/
     }
 }
 
@@ -70,6 +78,7 @@ fn fern_mesh(settings: &FernSettings, part: FernPart) -> MyMesh {
                 let l = l0 * prog * leaflet_len;
                 let a = dir * a0 * prog;
                 let step = Vec2::new(c0, a);
+                //builder.rotate(-curve * 2.0 * dir); // TODO: rotation can be better controlled. However, I like the current ones since they have more imperfections
                 let slant = settings.slant;
                 let thinning = settings.thinning;
                 let stomp = settings.stomp;
@@ -162,11 +171,12 @@ pub fn render_texture(
     //let fern = fern_mesh(&settings);
     //let fern_mesh = fern.to_bevy();
 
-    let (img, layer) = render_to_texture(width, height, commands, images, layer);
+    let (img, layer, camera_id) = render_to_texture(width, height, commands, images, layer);
     let mesh = meshes.add(Mesh::from(Cube { size: 1.0 }));
     let mesh2 = meshes.add(Mesh::from(Cube { size: 1.0 }));
     let mesh3 = meshes.add(Mesh::from(Cube { size: 1.0 }));
     settings.meshes = vec![mesh.id(), mesh2.id(), mesh3.id()];
+    settings.camera = Some(camera_id);
 
     commands
         .spawn((

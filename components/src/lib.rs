@@ -42,8 +42,6 @@ impl MaterialExtension for FernMaterial {
     }
 }
 
-
-
 #[derive(Reflect, Component, InspectorOptions)]
 #[reflect(Component, InspectorOptions)]
 pub struct FernSettings {
@@ -52,9 +50,9 @@ pub struct FernSettings {
     #[inspector(min = 0.001, max = 0.3, speed = 0.001)]
     pub stem_w2: f32,
 
-    #[inspector(min = 1, max = 100)]
+    #[inspector(min = 2, max = 100)]
     pub leaflets1: u32,
-    #[inspector(min = 1, max = 100)]
+    #[inspector(min = 3, max = 100)]
     pub leaflets2: u32,
     #[inspector(min = 0.0, max = 10.0, speed = 0.001)]
     pub leaflet_spacing: f32,
@@ -72,13 +70,13 @@ pub struct FernSettings {
     #[inspector(min = 0.0, max = 10.0, speed = 0.001)]
     pub l0: f32,
 
-
     #[inspector(min = 8, max = 4096)]
     pub width: u32,
     #[inspector(min = 8, max = 4096)]
     pub height: u32,
 
     pub meshes: Vec<AssetId<Mesh>>,
+    pub camera: Option<Entity>,
 }
 
 impl Default for FernSettings {
@@ -94,12 +92,13 @@ impl Default for FernSettings {
 
             slant: 2.0,
             thinning: 0.5,
-            stomp:1.4,
+            stomp: 1.4,
             l0: 0.05,
 
             width: 512,
             height: 512,
             meshes: vec![],
+            camera: None,
         }
     }
 }
