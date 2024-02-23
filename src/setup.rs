@@ -1,14 +1,12 @@
 use bevy::{
     pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
-    render::{mesh::shape::Cube, renderer::RenderDevice, texture::{CompressedImageFormats, ImageSampler, ImageType}, view::NoFrustumCulling},
+    render::{mesh::shape::Cube, renderer::RenderDevice, view::NoFrustumCulling},
 };
 use components::*;
 use procedural_meshes::render_to_texture;
 use std::f32::consts::PI;
 use wgpu::PrimitiveTopology;
-
-use crate::{compress::compress_to_basis, gpu2cpu::{ImageExportBundle, ImageExportSource}};
 
 pub fn render_texture(
     width: u32,
@@ -18,9 +16,7 @@ pub fn render_texture(
     materials: &mut ResMut<Assets<ColorMaterial>>,
     images: &mut ResMut<Assets<Image>>,
     colors: [Color; 3],
-    layer: u8,
-    device: Res<bevy::render::renderer::RenderDevice>,
-    export_sources: &mut ResMut<Assets<ImageExportSource>>,
+    layer: u8
 ) -> Handle<Image> {
     let mut settings = FernSettings {
         width,
@@ -37,21 +33,6 @@ pub fn render_texture(
     settings.meshes = vec![mesh.id(), mesh2.id(), mesh3.id()];
     settings.camera = Some(camera_id);
     settings.render_target = Some(img.clone());
-
-    
-    let supported_compressed_formats = CompressedImageFormats::from_features(device.features());
-    let image = images.get(img.clone()).unwrap();
-    let compressed_basis_data = compress_to_basis(&image);
-    let comp_img = Image::from_buffer(
-        &compressed_basis_data,
-        ImageType::Format(bevy::render::texture::ImageFormat::Basis),
-        supported_compressed_formats,
-        image.texture_descriptor.format.is_srgb(),
-        ImageSampler::linear(),
-    )
-    .unwrap();
-    let image_handle = images.add(comp_img);
-    settings.compressed_target = Some(image_handle.clone());
 
     commands
         .spawn((
@@ -85,12 +66,7 @@ pub fn render_texture(
             ));
         });
 
-    commands.spawn(ImageExportBundle {
-        source: export_sources.add(img.clone().into()),
-        ..default()
-    });
-
-    return image_handle;
+    return img;
 }
 
 pub fn setup_vegetation(
@@ -100,9 +76,6 @@ pub fn setup_vegetation(
     mut materials2: ResMut<Assets<StandardMaterial>>,
     mut materials3: ResMut<Assets<ColorMaterial>>,
     mut images: ResMut<Assets<Image>>,
-    device: Res<RenderDevice>,
-    //asset_server: Res<AssetServer>,
-    mut export_sources: ResMut<Assets<ImageExportSource>>,
 ) {
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip);
     let count = 40 * 12;
@@ -129,8 +102,6 @@ pub fn setup_vegetation(
             Color::rgb(0.05, 0.36, 0.05),
         ],
         1,
-        device,
-        &mut export_sources,
     ));
 
     let fern_normal = None;

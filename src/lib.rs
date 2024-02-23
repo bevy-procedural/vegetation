@@ -1,17 +1,8 @@
-use bevy::{
-    prelude::*,
-    render::{
-        renderer::RenderDevice,
-        texture::{CompressedImageFormats, ImageSampler, ImageType},
-    },
-};
+use bevy::{prelude::*, render::renderer::RenderDevice};
 use components::*;
 use fern::{fern_mesh, FernPart};
-use gpu2cpu::ImageExportPlugin;
 use setup::setup_vegetation;
-mod compress;
 mod fern;
-pub mod gpu2cpu;
 mod setup;
 
 #[no_mangle]
@@ -28,115 +19,13 @@ pub fn fetch(world: &World, mut images: ResMut<Assets<Image>>) {
 }
 
 #[no_mangle]
-pub fn update_vegetation_off(
-    query: Query<&FernSettings>,
-    mut cameras: Query<&mut Camera>,
-    mut images: ResMut<Assets<Image>>,
-    //mut materials: ResMut<Assets<bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial>>>,
-    device: Res<bevy::render::renderer::RenderDevice>,
-) {
+pub fn update_vegetation_off(query: Query<&FernSettings>, mut cameras: Query<&mut Camera>) {
     for settings in query.iter() {
-        /*let image = images.get(settings.render_target.clone().unwrap()).unwrap();
-        image
-            .clone()
-            .try_into_dynamic()
-            .unwrap()
-            .to_rgba8()
-            .save("test.png")
-            .unwrap();*/
-
         if let Ok(mut cam) = cameras.get_mut(settings.camera.unwrap()) {
             if !cam.is_active {
                 continue;
             }
             cam.is_active = false;
-
-            let target = images
-                .get_mut(settings.compressed_target.clone().unwrap())
-                .unwrap();
-
-            let mut file = std::fs::OpenOptions::new()
-                .read(true)
-                .open("test.basis")
-                .unwrap();
-            use std::io::*;
-            let compressed_basis_data = {
-                let mut data = Vec::new();
-                file.read_to_end(&mut data).unwrap();
-                data
-            };
-
-            let supported_compressed_formats =
-                CompressedImageFormats::from_features(device.features());
-            let comp_img = Image::from_buffer(
-                &compressed_basis_data,
-                ImageType::Format(bevy::render::texture::ImageFormat::Basis),
-                supported_compressed_formats,
-                true,
-                ImageSampler::linear(),
-            )
-            .unwrap();
-            target.data = comp_img.data;
-
-            /*println!("Compressing image");
-            let is_srgb;
-            let compressed_basis_data = {
-                let image = images.get(settings.render_target.clone().unwrap()).unwrap();
-                is_srgb = image.texture_descriptor.format.is_srgb();
-                compress_to_basis(&image)
-            };
-            /*let target = images
-            .get_mut(settings.compressed_target.clone().unwrap())
-            .unwrap();*/
-            let supported_compressed_formats =
-                CompressedImageFormats::from_features(device.features());
-            let comp_img = Image::from_buffer(
-                &compressed_basis_data,
-                ImageType::Format(bevy::render::texture::ImageFormat::Basis),
-                supported_compressed_formats,
-                is_srgb,
-                ImageSampler::linear(),
-            )
-            .unwrap();
-            //target.data = comp_img.data;
-
-            // TODO: leaks memory
-
-            let image = images.get(settings.render_target.clone().unwrap()).unwrap();
-
-            image
-                .clone()
-                .try_into_dynamic()
-                .unwrap()
-                .save("test.png")
-                .unwrap();
-
-            /*let mut writer = std::io::BufWriter::new(std::fs::File::create("test.png").unwrap());
-            image::write_buffer_with_format(
-                &mut writer,
-                &image.data,
-                image.width(),
-                image.height(),
-                image::ColorType::Rgba8,
-                image::ImageFormat::Png,
-            )
-            .unwrap();*/
-
-            /*let mut file = std::fs::OpenOptions::new()
-                .create(true)
-                .write(true)
-                .open("test.basis")
-                .unwrap();
-            use std::io::Write;
-            file.write_all(&compressed_basis_data).unwrap();*/
-
-            let new_handle = images.add(comp_img);
-
-            for m in materials.iter_mut() {
-                let x = m.1;
-                x.base.base_color_texture = Some(settings.render_target.clone().unwrap());
-                x.base.base_color_texture = Some(new_handle.clone());
-            }*/
         }
     }
 }
@@ -169,6 +58,5 @@ pub fn update_vegetation(
 
 #[no_mangle]
 pub fn add_plugin(app: &mut App) {
-    app.add_plugins(ImageExportPlugin::default())
-        .add_systems(Startup, setup_vegetation); //.add_systems(Startup, setup);
+    app.add_systems(Startup, setup_vegetation); //.add_systems(Startup, setup);
 }
