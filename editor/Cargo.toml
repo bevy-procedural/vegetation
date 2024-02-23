@@ -19,6 +19,7 @@ components = { path = "../components" }
 procedural-vegetation = { path = "../" }
 procedural-meshes = { path = "../../meshes" }
 basis-universal = "0.3.1"
+image = "0.24.9"
 
 [features]
 default = []

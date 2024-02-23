@@ -15,6 +15,7 @@ bevy_editor_pls = "0.7.0"
 procedural-meshes = { path = "../../meshes" }
 hot-lib-reloader = "0.7.0"
 basis-universal = "0.3.1"
+image = "0.24.9"
 
 
 [features]
