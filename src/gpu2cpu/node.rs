@@ -1,14 +1,16 @@
 // based on https://github.com/paulkre/bevy_image_export/blob/main/src/node.rs
 
+use super::{fetch::ExtractableImage, source::ImageExportSource};
 use bevy::{
-    prelude::*, reflect::TypeUuid, render::{
+    prelude::*,
+    reflect::TypeUuid,
+    render::{
         render_asset::RenderAssets,
         render_graph::{Node, NodeRunError, RenderGraphContext},
         render_resource::{ImageCopyBuffer, ImageDataLayout},
         renderer::RenderContext,
-    }
+    },
 };
-use super::source::ImageExportSource;
 
 pub const NODE_NAME: &str = "image_export";
 
@@ -21,6 +23,13 @@ impl Node for ImageExportNode {
         world: &World,
     ) -> Result<(), NodeRunError> {
         for (_, source) in world.resource::<RenderAssets<ImageExportSource>>().iter() {
+            /*
+            if world.get_resource::<ExtractableImage>().unwrap().0.len() > 0 {
+                continue;
+            }
+            println!("Copying image data from GPU to CPU");
+            */
+
             if let Some(gpu_image) = world
                 .resource::<RenderAssets<Image>>()
                 .get(&source.source_handle)

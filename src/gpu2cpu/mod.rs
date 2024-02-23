@@ -11,7 +11,7 @@ use fetch::{store_in_img, ImageExportSettings};
 use node::{ImageExportNode, NODE_NAME};
 pub use source::ImageExportSource;
 
-use crate::gpu2cpu::fetch::{copy_from_render, ExtractableImage};
+use crate::gpu2cpu::fetch::ExtractableImage;
 mod fetch;
 mod node;
 mod source;
@@ -31,7 +31,7 @@ fn setup(mut commands: Commands) {
 }
 
 fn check_vec_len(extracted: Res<ExtractableImage>) {
-    println!("Extracted image data: {:?}", extracted.0);
+    // println!("Extracted image data: {:?}", extracted.0);
 }
 
 impl Plugin for ImageExportPlugin {
@@ -60,14 +60,12 @@ impl Plugin for ImageExportPlugin {
 
         let render_app = app.sub_app_mut(RenderApp);
 
-        render_app
-            .add_systems(ExtractSchedule, copy_from_render)
-            .add_systems(
-                Render,
-                store_in_img
-                    .after(RenderSet::Render)
-                    .before(RenderSet::Cleanup),
-            );
+        render_app.add_systems(
+            Render,
+            store_in_img
+                .after(RenderSet::Render)
+                .before(RenderSet::Cleanup),
+        );
 
         let mut graph = render_app.world.get_resource_mut::<RenderGraph>().unwrap();
         graph.add_node(NODE_NAME, ImageExportNode);

@@ -1,14 +1,14 @@
 use bevy::{
     pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
-    render::{mesh::shape::Cube, renderer::RenderDevice, view::NoFrustumCulling},
+    render::{mesh::shape::Cube, renderer::RenderDevice, texture::{CompressedImageFormats, ImageSampler, ImageType}, view::NoFrustumCulling},
 };
 use components::*;
 use procedural_meshes::render_to_texture;
 use std::f32::consts::PI;
 use wgpu::PrimitiveTopology;
 
-use crate::gpu2cpu::{ImageExportBundle, ImageExportSource};
+use crate::{compress::compress_to_basis, gpu2cpu::{ImageExportBundle, ImageExportSource}};
 
 pub fn render_texture(
     width: u32,
@@ -19,7 +19,7 @@ pub fn render_texture(
     images: &mut ResMut<Assets<Image>>,
     colors: [Color; 3],
     layer: u8,
-    _device: Res<bevy::render::renderer::RenderDevice>,
+    device: Res<bevy::render::renderer::RenderDevice>,
     export_sources: &mut ResMut<Assets<ImageExportSource>>,
 ) -> Handle<Image> {
     let mut settings = FernSettings {
@@ -38,7 +38,7 @@ pub fn render_texture(
     settings.camera = Some(camera_id);
     settings.render_target = Some(img.clone());
 
-    /*
+    
     let supported_compressed_formats = CompressedImageFormats::from_features(device.features());
     let image = images.get(img.clone()).unwrap();
     let compressed_basis_data = compress_to_basis(&image);
@@ -51,7 +51,7 @@ pub fn render_texture(
     )
     .unwrap();
     let image_handle = images.add(comp_img);
-    settings.compressed_target = Some(image_handle.clone());*/
+    settings.compressed_target = Some(image_handle.clone());
 
     commands
         .spawn((
@@ -90,7 +90,7 @@ pub fn render_texture(
         ..default()
     });
 
-    return img;
+    return image_handle;
 }
 
 pub fn setup_vegetation(

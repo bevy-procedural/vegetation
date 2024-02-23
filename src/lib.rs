@@ -1,12 +1,18 @@
-use bevy::{prelude::*, render::renderer::RenderDevice};
+use bevy::{
+    prelude::*,
+    render::{
+        renderer::RenderDevice,
+        texture::{CompressedImageFormats, ImageSampler, ImageType},
+    },
+};
 use components::*;
-use gpu2cpu::ImageExportPlugin;
-use setup::{ setup_vegetation};
 use fern::{fern_mesh, FernPart};
+use gpu2cpu::ImageExportPlugin;
+use setup::setup_vegetation;
 mod compress;
+mod fern;
 pub mod gpu2cpu;
 mod setup;
-mod fern;
 
 #[no_mangle]
 pub fn fetch(world: &World, mut images: ResMut<Assets<Image>>) {
@@ -27,23 +33,50 @@ pub fn update_vegetation_off(
     mut cameras: Query<&mut Camera>,
     mut images: ResMut<Assets<Image>>,
     //mut materials: ResMut<Assets<bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial>>>,
-    //device: Res<bevy::render::renderer::RenderDevice>,
+    device: Res<bevy::render::renderer::RenderDevice>,
 ) {
     for settings in query.iter() {
-        let image = images.get(settings.render_target.clone().unwrap()).unwrap();
+        /*let image = images.get(settings.render_target.clone().unwrap()).unwrap();
         image
             .clone()
             .try_into_dynamic()
             .unwrap()
             .to_rgba8()
             .save("test.png")
-            .unwrap();
+            .unwrap();*/
 
         if let Ok(mut cam) = cameras.get_mut(settings.camera.unwrap()) {
             if !cam.is_active {
                 continue;
             }
             cam.is_active = false;
+
+            let target = images
+                .get_mut(settings.compressed_target.clone().unwrap())
+                .unwrap();
+
+            let mut file = std::fs::OpenOptions::new()
+                .read(true)
+                .open("test.basis")
+                .unwrap();
+            use std::io::*;
+            let compressed_basis_data = {
+                let mut data = Vec::new();
+                file.read_to_end(&mut data).unwrap();
+                data
+            };
+
+            let supported_compressed_formats =
+                CompressedImageFormats::from_features(device.features());
+            let comp_img = Image::from_buffer(
+                &compressed_basis_data,
+                ImageType::Format(bevy::render::texture::ImageFormat::Basis),
+                supported_compressed_formats,
+                true,
+                ImageSampler::linear(),
+            )
+            .unwrap();
+            target.data = comp_img.data;
 
             /*println!("Compressing image");
             let is_srgb;
