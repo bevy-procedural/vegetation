@@ -1,21 +1,6 @@
-use bevy::{
-    pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
-    prelude::*,
-    render::{
-        mesh::shape::Cube,
-        renderer::{RenderContext, RenderDevice},
-        texture::{CompressedImageFormats, ImageSampler, ImageType},
-        view::NoFrustumCulling,
-    },
-};
+use bevy::prelude::*;
 use components::*;
-pub use super::gpu2cpu::{
-    fetch::{ImageExportBundle, ImageExportPlugin},
-    source::ImageExportSource,
-};
 use procedural_meshes::{fill::MyFill, mesh::MyMesh, *};
-use std::f32::consts::PI;
-
 
 #[derive(Debug, Reflect, Component, PartialEq)]
 pub enum FernPart {

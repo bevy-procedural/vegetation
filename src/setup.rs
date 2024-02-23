@@ -1,21 +1,14 @@
 use bevy::{
     pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
-    render::{
-        mesh::shape::Cube,
-        renderer::{RenderContext, RenderDevice},
-        texture::{CompressedImageFormats, ImageSampler, ImageType},
-        view::NoFrustumCulling,
-    },
+    render::{mesh::shape::Cube, renderer::RenderDevice, view::NoFrustumCulling},
 };
 use components::*;
-pub use super::gpu2cpu::{
-    fetch::{ImageExportBundle, ImageExportPlugin},
-    source::ImageExportSource,
-};
-use procedural_meshes::{fill::MyFill, mesh::MyMesh, *};
+use procedural_meshes::render_to_texture;
 use std::f32::consts::PI;
 use wgpu::PrimitiveTopology;
+
+use crate::gpu2cpu::{ImageExportBundle, ImageExportSource};
 
 pub fn render_texture(
     width: u32,

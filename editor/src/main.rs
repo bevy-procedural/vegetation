@@ -3,12 +3,11 @@ use bevy::{
         EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
         SystemInformationDiagnosticsPlugin,
     },
-    pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
+    pbr::ExtendedMaterial,
     prelude::*,
-    render::{mesh::PrimitiveTopology, renderer::RenderDevice, view::NoFrustumCulling},
 };
 use bevy_editor_pls::prelude::*;
-use std::{env, f32::consts::PI};
+use std::env;
 
 #[cfg(not(feature = "reload"))]
 pub use components::*;

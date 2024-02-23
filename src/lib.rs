@@ -1,9 +1,6 @@
 use bevy::{prelude::*, render::renderer::RenderDevice};
 use components::*;
-pub use gpu2cpu::{
-    fetch::{ImageExportBundle, ImageExportPlugin},
-    source::ImageExportSource,
-};
+use gpu2cpu::ImageExportPlugin;
 use setup::{ setup_vegetation};
 use fern::{fern_mesh, FernPart};
 mod compress;
