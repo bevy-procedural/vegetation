@@ -4,10 +4,12 @@ pub use gpu2cpu::{
     fetch::{ImageExportBundle, ImageExportPlugin},
     source::ImageExportSource,
 };
-use setup::{fern_mesh, setup_vegetation, FernPart};
+use setup::{ setup_vegetation};
+use fern::{fern_mesh, FernPart};
 mod compress;
 pub mod gpu2cpu;
 mod setup;
+mod fern;
 
 #[no_mangle]
 pub fn fetch(world: &World, mut images: ResMut<Assets<Image>>) {
