@@ -42,23 +42,12 @@ unsafe_op_in_unsafe_fn = "warn"
 workspace = true
 
 [dependencies]
-bevy = { version = "0.12.1", features = [
-    "file_watcher",
-    "ktx2",
-    "zstd",
-    "basis-universal",
-] }
-bevy-inspector-egui = "0.22.1"
+bevy = { version = "0.13.0", default-features = false }
+bevy-inspector-egui = "0.23.2"
 procedural-meshes = { path = "../meshes" }
 hot-lib-reloader = "0.7.0"
-bevy_editor_pls = "0.7.0"
+bevy_editor_pls = "0.8.0"
 components = { path = "./components" }
-basis-universal = "0.3.1"
-image = "0.24.9"
-bytemuck = "1.14.3"
-futures = "0.3.30"
-futures-lite = "2.2.0"
-wgpu = "0.17.1"
 
 [features]
 default = []

@@ -44,7 +44,7 @@ fn fern_vertices(t: f32, vertex: Vertex) -> FernResult {
     // length of the leaf; varies slightly per leaf
     let l = 12.0 / f32(vertices_per_leaf) + sin(leaf + 100.0) * 0.1;
     // first leafs are bent more
-    let bendStrength = -1.0 / f32(vertices_per_leaf);
+    let bendStrength = -2.0 / f32(vertices_per_leaf);
 
     //let tooth = (f32(vertex.vertex_index) / 2.0) % 2.0;
     //if tooth <= 0.1 || tooth >= 1.4 {

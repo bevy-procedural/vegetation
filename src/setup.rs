@@ -1,12 +1,76 @@
 use bevy::{
     pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
-    render::{mesh::shape::Cube, renderer::RenderDevice, view::NoFrustumCulling},
+    render::{
+        mesh::PrimitiveTopology,
+        render_asset::RenderAssetUsages,
+        render_resource::{
+            Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
+        },
+        view::{NoFrustumCulling, RenderLayers},
+    },
 };
 use components::*;
-use procedural_meshes::render_to_texture;
 use std::f32::consts::PI;
-use wgpu::PrimitiveTopology;
+
+pub fn render_to_texture(
+    width: u32,
+    height: u32,
+    commands: &mut Commands,
+    images: &mut ResMut<Assets<Image>>,
+    layer: u8,
+) -> (Handle<Image>, RenderLayers, Entity) {
+    let size = Extent3d {
+        width,
+        height,
+        ..default()
+    };
+
+    // This is the texture that will be rendered to.
+    let mut image = Image {
+        texture_descriptor: TextureDescriptor {
+            label: None,
+            size,
+            dimension: TextureDimension::D2,
+            format: TextureFormat::Bgra8UnormSrgb,
+            mip_level_count: 1,
+            sample_count: 1,
+            usage: TextureUsages::TEXTURE_BINDING
+                | TextureUsages::COPY_DST
+                | TextureUsages::COPY_SRC
+                | TextureUsages::RENDER_ATTACHMENT,
+            view_formats: &[],
+        },
+        ..default()
+    };
+
+    // fill image.data with zeroes
+    image.resize(size);
+
+    let image_handle = images.add(image);
+
+    // This specifies the layer used for the first pass, which will be attached to the first pass camera and cube.
+    let first_pass_layer = RenderLayers::layer(layer);
+
+    let camera_id = commands
+        .spawn((
+            Camera2dBundle {
+                camera_2d: Camera2d { ..default() },
+                camera: Camera {
+                    // render before the "main pass" camera
+                    order: -1,
+                    clear_color: ClearColorConfig::Custom(Color::rgba(0.0, 0.0, 0.0, 0.0)),
+                    target: image_handle.clone().into(),
+                    ..default()
+                },
+                ..default()
+            },
+            first_pass_layer,
+        ))
+        .id();
+
+    return (image_handle, first_pass_layer, camera_id);
+}
 
 pub fn render_texture(
     width: u32,
@@ -16,20 +80,18 @@ pub fn render_texture(
     materials: &mut ResMut<Assets<ColorMaterial>>,
     images: &mut ResMut<Assets<Image>>,
     colors: [Color; 3],
-    layer: u8
+    layer: u8,
 ) -> Handle<Image> {
     let mut settings = FernSettings {
         width,
         height,
         ..default()
     };
-    //let fern = fern_mesh(&settings);
-    //let fern_mesh = fern.to_bevy();
 
     let (img, layer, camera_id) = render_to_texture(width, height, commands, images, layer);
-    let mesh = meshes.add(Mesh::from(Cube { size: 1.0 }));
-    let mesh2 = meshes.add(Mesh::from(Cube { size: 1.0 }));
-    let mesh3 = meshes.add(Mesh::from(Cube { size: 1.0 }));
+    let mesh = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0)));
+    let mesh2 = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0)));
+    let mesh3 = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0)));
     settings.meshes = vec![mesh.id(), mesh2.id(), mesh3.id()];
     settings.camera = Some(camera_id);
     settings.render_target = Some(img.clone());
@@ -73,11 +135,11 @@ pub fn setup_vegetation(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FernMaterial>>>,
-    mut materials2: ResMut<Assets<StandardMaterial>>,
     mut materials3: ResMut<Assets<ColorMaterial>>,
+    mut materials2: ResMut<Assets<StandardMaterial>>,
     mut images: ResMut<Assets<Image>>,
 ) {
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip);
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip, RenderAssetUsages::all());
     let count = 40 * 12;
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0., 0., 0.]].repeat(count));
     // TODO: to enable color in PBR (used for ao). Is there a way without adding an attribute?
@@ -163,20 +225,18 @@ pub fn setup_vegetation(
     }
 
     commands.spawn((PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane {
-            subdivisions: 0,
-            size: 100.0,
-        })),
+        mesh: meshes.add(Mesh::from(Plane3d::new(Vec3::new(0.0, 1.0, 0.0)))),
         material: materials2.add(StandardMaterial {
-            base_color: Color::rgb(0.5, 0.5, 0.5),
+            base_color: Color::rgb(0.5, 0.5, 0.4),
             ..default()
         }),
-        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+        transform: Transform::from_scale(Vec3::splat(100.0)),
         ..default()
     },));
 
+    
     commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cylinder::default())),
+        mesh: meshes.add(Mesh::from(Cylinder::default())),
         material: materials2.add(StandardMaterial {
             base_color: Color::rgb(0.5, 0.5, 0.5),
             ..default()

@@ -5,9 +5,7 @@ use bevy::{
     reflect::TypePath,
     render::{
         mesh::MeshVertexBufferLayout,
-        render_resource::{
-            AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
-        }, 
+        render_resource::{AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError},
     },
 };
 use bevy_inspector_egui::{inspector_options::ReflectInspectorOptions, InspectorOptions};

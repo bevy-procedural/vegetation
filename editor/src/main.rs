@@ -5,6 +5,7 @@ use bevy::{
     },
     pbr::ExtendedMaterial,
     prelude::*,
+    window::WindowResolution,
 };
 use bevy_editor_pls::prelude::*;
 use std::env;
@@ -47,7 +48,9 @@ pub fn main() {
 
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
-            visible: false,
+            resolution: WindowResolution::new(1920.0, 1080.0),
+            position: WindowPosition::Centered(MonitorSelection::Index(1)),
+            decorations: false,
             ..default()
         }),
         ..default()
@@ -61,7 +64,7 @@ pub fn main() {
     >::default())
     .register_type::<FernSettings>()
     .add_plugins((
-        EditorPlugin::on_second_monitor_fullscreen(EditorPlugin::default()),
+        EditorPlugin::default(),
         FrameTimeDiagnosticsPlugin,
         EntityCountDiagnosticsPlugin,
         SystemInformationDiagnosticsPlugin::default(),
@@ -71,7 +74,6 @@ pub fn main() {
 
     app.add_systems(Update, reload_after_change)
         .add_systems(Update, bevy::window::close_on_esc)
-        //.add_systems(Startup, setup_vegetation)
         .add_systems(Update, update_vegetation_off.before(update_vegetation))
         .add_systems(Update, update_vegetation)
         .run();

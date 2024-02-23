@@ -1,22 +1,9 @@
-use bevy::{prelude::*, render::renderer::RenderDevice};
+use bevy::prelude::*;
 use components::*;
 use fern::{fern_mesh, FernPart};
 use setup::setup_vegetation;
 mod fern;
 mod setup;
-
-#[no_mangle]
-pub fn fetch(world: &World, mut images: ResMut<Assets<Image>>) {
-    let device = world.resource::<RenderDevice>();
-    let ctx = bevy::render::renderer::RenderContext::new(device.clone());
-
-    /* for settings in world.query::<&FernSettings>().iter(world) {
-        let image = images.get(settings.render_target.clone().unwrap()).unwrap();
-
-        /*ctx.command_encoder()
-        .copy_texture_to_buffer(image, destination, copy_size);*/
-    }*/
-}
 
 #[no_mangle]
 pub fn update_vegetation_off(query: Query<&FernSettings>, mut cameras: Query<&mut Camera>) {
