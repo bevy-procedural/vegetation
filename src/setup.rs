@@ -11,6 +11,8 @@ use bevy::{
 };
 use components::*;
 
+use crate::gpu2cpu::{ImageExportBundle, ImageExportSource};
+
 pub fn render_to_texture(
     width: u32,
     height: u32,
@@ -79,6 +81,7 @@ pub fn render_texture(
     images: &mut ResMut<Assets<Image>>,
     colors: [Color; 3],
     layer: u8,
+    //export_sources: &mut ResMut<Assets<ImageExportSource>>,
 ) -> Handle<Image> {
     let mut settings = FernSettings {
         width,
@@ -126,6 +129,11 @@ pub fn render_texture(
             ));
         });
 
+   /* commands.spawn(ImageExportBundle {
+        source: export_sources.add(img.clone()),
+        ..default()
+    });*/
+
     return img;
 }
 
@@ -135,7 +143,11 @@ pub fn make_fern_material_internal(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
     images: &mut ResMut<Assets<Image>>,
-) -> (bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial>, Mesh) {
+    //export_sources: &mut ResMut<Assets<ImageExportSource>>,
+) -> (
+    bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial>,
+    Mesh,
+) {
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip, RenderAssetUsages::all());
     let count = 40 * 12;
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0., 0., 0.]].repeat(count));
@@ -161,6 +173,7 @@ pub fn make_fern_material_internal(
             Color::rgb(0.05, 0.36, 0.05),
         ],
         1,
+        //export_sources,
     ));
 
     let fern_normal = None;

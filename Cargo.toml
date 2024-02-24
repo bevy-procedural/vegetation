@@ -50,6 +50,8 @@ procedural-meshes = { path = "../meshes" }
 hot-lib-reloader = "0.7.0"
 components = { path = "./components" }
 bevy_panorbit_camera = "0.14.0"
+futures-lite = "2.2.0"
+futures = "0.3.30"
 
 [features]
 default = []

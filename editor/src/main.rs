@@ -1,5 +1,5 @@
 use bevy::{
-    diagnostic::FrameTimeDiagnosticsPlugin,
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
     render::view::NoFrustumCulling,
@@ -68,6 +68,7 @@ pub fn main() {
     .add_systems(Startup, setup_scene)
     .add_plugins((
         FrameTimeDiagnosticsPlugin,
+        LogDiagnosticsPlugin::default(),
         FilterQueryInspectorPlugin::<With<FernSettings>>::default(),
         PanOrbitCameraPlugin,
     ));
@@ -92,26 +93,33 @@ fn setup_scene(
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FernMaterial>>>,
     mut materials3: ResMut<Assets<ColorMaterial>>,
     mut materials2: ResMut<Assets<StandardMaterial>>,
-    mut images: ResMut<Assets<Image>>,
+    mut images: ResMut<Assets<Image>>
 ) {
     // TODO: use instancing https://github.com/bevyengine/bevy/blob/release-0.12.1/examples/shader/shader_instancing.rs#L104
 
-    let (material, mesh) =
-        make_fern_material(&mut commands, &mut meshes, &mut materials3, &mut images);
+    let (material, mesh) = make_fern_material(
+        &mut commands,
+        &mut meshes,
+        &mut materials3,
+        &mut images,
+        &mut export_sources,
+    );
+    let mesh_handle = meshes.add(mesh);
+    let material_handle = materials.add(material);
 
     for i in 0..30 {
         let s = (i as f32 * 100.0).sin() + 2.0;
 
         commands.spawn((
             MaterialMeshBundle {
-                mesh: meshes.add(mesh.clone()),
+                mesh: mesh_handle.clone(),
                 transform: Transform::from_xyz(
                     ((1012.0 * i as f32).sin() * 100000.0) % 10.0,
                     s / 2.0,
                     ((432.0 * i as f32).sin() * 100000.0) % 10.0,
                 )
                 .with_scale(Vec3::splat(s)),
-                material: materials.add(material.clone()),
+                material: material_handle.clone(),
                 ..default()
             },
             // NOTE: Frustum culling is done based on the Aabb of the Mesh and the GlobalTransform.

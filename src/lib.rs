@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 use components::*;
 use fern::{fern_mesh, FernPart};
+use gpu2cpu::ImageExportSource;
 pub mod fern;
+mod gpu2cpu;
 mod setup;
 
 #[no_mangle]
@@ -50,7 +52,7 @@ pub fn make_fern_material(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
-    images: &mut ResMut<Assets<Image>>,
+    images: &mut ResMut<Assets<Image>>
 ) -> (
     bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial>,
     Mesh,
