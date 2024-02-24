@@ -31,10 +31,15 @@ mod procedural_vegetation_hot {
     pub fn was_updated() -> bool {}
 }
 
-fn reload_after_change() {
-    #[cfg(feature = "reload")]
-    if procedural_vegetation_hot::was_updated() {
+
+#[cfg(feature = "reload")]
+fn reload_after_change(mut query: Query<&mut FernSettings>) {
+    if procedural_vegetation_hot::was_updated()
+    {
         println!("Reloading systems");
+        for mut settings in query.iter_mut() {
+            settings.version = settings.version + 1;
+        }
     }
 }
 
@@ -70,14 +75,16 @@ pub fn main() {
 
     add_plugin(&mut app);
 
-    app.add_systems(Update, reload_after_change)
-        .add_systems(
-            Update,
-            (
-                update_vegetation_off,
-                update_vegetation.after(update_vegetation_off),
-                bevy::window::close_on_esc,
-            ),
-        )
-        .run();
+    #[cfg(feature = "reload")]
+    app.add_systems(PreUpdate, reload_after_change);
+
+    app.add_systems(
+        Update,
+        (
+            update_vegetation_off,
+            update_vegetation.after(update_vegetation_off),
+            bevy::window::close_on_esc,
+        ),
+    )
+    .run();
 }

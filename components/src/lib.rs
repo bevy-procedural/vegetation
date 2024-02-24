@@ -76,6 +76,8 @@ pub struct FernSettings {
     pub meshes: Vec<AssetId<Mesh>>,
     pub camera: Option<Entity>,
     pub render_target: Option<Handle<Image>>,
+    // To enable automatic reloading
+    pub version: u32,
 }
 
 impl Default for FernSettings {
@@ -99,6 +101,7 @@ impl Default for FernSettings {
             meshes: vec![],
             camera: None,
             render_target: None,
+            version: 0,
         }
     }
 }
