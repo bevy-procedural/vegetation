@@ -42,16 +42,17 @@ unsafe_op_in_unsafe_fn = "warn"
 workspace = true
 
 [dependencies]
-bevy = { version = "0.13.0", default-features = false }
+bevy = { version = "0.13.0", default-features = false, features = [
+    "basis-universal",
+] }
 bevy-inspector-egui = "0.23.2"
 procedural-meshes = { path = "../meshes" }
 hot-lib-reloader = "0.7.0"
-bevy_editor_pls = "0.8.0"
 components = { path = "./components" }
 
 [features]
 default = []
-dynamic = ["bevy/dynamic_linking", "components/dynamic"]
+dynamic = ["components/dynamic", "bevy/file_watcher"]
 
 [[example]]
 name = "simple"

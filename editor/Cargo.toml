@@ -7,7 +7,6 @@ publish = false
 
 [dependencies]
 bevy = { version = "0.13.0", default-features = false, features = [
-    "file_watcher",
     "basis-universal",
 ] }
 components = { path = "../components" }
@@ -15,11 +14,10 @@ procedural-vegetation = { path = "../" }
 procedural-meshes = { path = "../../meshes" }
 bevy-inspector-egui = "0.23.2"
 hot-lib-reloader = "0.7.0"
-bevy_editor_pls = "0.8.0"
 
 [features]
 default = []
-reload = ["components/dynamic", "bevy/dynamic_linking"]
+reload = ["components/dynamic", "bevy/file_watcher"]
 
 [lints]
 workspace = true

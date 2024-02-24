@@ -7,7 +7,6 @@ use bevy::{
     prelude::*,
     window::WindowResolution,
 };
-use bevy_editor_pls::prelude::*;
 use std::env;
 
 #[cfg(not(feature = "reload"))]
@@ -64,7 +63,6 @@ pub fn main() {
     >::default())
     .register_type::<FernSettings>()
     .add_plugins((
-        EditorPlugin::default(),
         FrameTimeDiagnosticsPlugin,
         EntityCountDiagnosticsPlugin,
         SystemInformationDiagnosticsPlugin::default(),
