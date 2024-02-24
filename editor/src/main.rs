@@ -7,6 +7,7 @@ use bevy::{
     prelude::*,
     window::WindowResolution,
 };
+use bevy_inspector_egui::quick::{FilterQueryInspectorPlugin, WorldInspectorPlugin};
 use std::env;
 
 #[cfg(not(feature = "reload"))]
@@ -64,15 +65,19 @@ pub fn main() {
     .register_type::<FernSettings>()
     .add_plugins((
         FrameTimeDiagnosticsPlugin,
-        EntityCountDiagnosticsPlugin,
-        SystemInformationDiagnosticsPlugin::default(),
+        FilterQueryInspectorPlugin::<With<FernSettings>>::default(),
     ));
 
     add_plugin(&mut app);
 
     app.add_systems(Update, reload_after_change)
-        .add_systems(Update, bevy::window::close_on_esc)
-        .add_systems(Update, update_vegetation_off.before(update_vegetation))
-        .add_systems(Update, update_vegetation)
+        .add_systems(
+            Update,
+            (
+                update_vegetation_off,
+                update_vegetation.after(update_vegetation_off),
+                bevy::window::close_on_esc,
+            ),
+        )
         .run();
 }

@@ -12,6 +12,7 @@ pub fn update_vegetation_off(query: Query<&FernSettings>, mut cameras: Query<&mu
             if !cam.is_active {
                 continue;
             }
+            println!("Deactivating camera");
             cam.is_active = false;
         }
     }
@@ -25,6 +26,8 @@ pub fn update_vegetation(
 ) {
     for settings in query.iter() {
         if let Ok(mut cam) = cameras.get_mut(settings.camera.unwrap()) {
+            // TODO: this isn't always transferred in time...  How to make sure the camera is turned on in time?
+            println!("Activating camera");
             cam.is_active = true;
         }
 
