@@ -1,13 +1,8 @@
 use bevy::{
-    diagnostic::{
-        EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
-        SystemInformationDiagnosticsPlugin,
-    },
-    pbr::ExtendedMaterial,
-    prelude::*,
+    diagnostic::FrameTimeDiagnosticsPlugin, pbr::ExtendedMaterial, prelude::*,
     window::WindowResolution,
 };
-use bevy_inspector_egui::quick::{FilterQueryInspectorPlugin, WorldInspectorPlugin};
+use bevy_inspector_egui::quick::FilterQueryInspectorPlugin;
 use std::env;
 
 #[cfg(not(feature = "reload"))]
@@ -31,11 +26,9 @@ mod procedural_vegetation_hot {
     pub fn was_updated() -> bool {}
 }
 
-
 #[cfg(feature = "reload")]
 fn reload_after_change(mut query: Query<&mut FernSettings>) {
-    if procedural_vegetation_hot::was_updated()
-    {
+    if procedural_vegetation_hot::was_updated() {
         println!("Reloading systems");
         for mut settings in query.iter_mut() {
             settings.version = settings.version + 1;

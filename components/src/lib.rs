@@ -65,7 +65,7 @@ pub struct FernSettings {
     pub thinning: f32,
     #[inspector(min = 0.0, max = 10.0, speed = 0.001)]
     pub stomp: f32,
-    #[inspector(min = 0.0, max = 10.0, speed = 0.001)]
+    #[inspector(min = 0.0, max = 10.0, speed = 0.00001)]
     pub l0: f32,
 
     #[inspector(min = 8, max = 4096)]
@@ -89,12 +89,12 @@ impl Default for FernSettings {
             leaflets2: 10,
             leaflet_spacing: 1.6,
             leafshape_exp: 1.5,
-            curvature: 0.01,
+            curvature: 0.014,
 
             slant: 2.0,
             thinning: 0.5,
             stomp: 1.4,
-            l0: 0.05,
+            l0: 0.0521,
 
             width: 512,
             height: 512,

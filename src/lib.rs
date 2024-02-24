@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use components::*;
 use fern::{fern_mesh, FernPart};
-use setup::setup_vegetation;
-mod fern;
+pub use setup::setup_vegetation;
+pub mod fern;
 mod setup;
 
 #[no_mangle]

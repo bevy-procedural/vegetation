@@ -35,15 +35,14 @@ pub fn fern_mesh(settings: &FernSettings, part: FernPart) -> MyMesh {
             part: &FernPart,
         ) {
             builder.push();
-            let c0 = curve;
             let a0 = leaflet_len / ((leaflets + 1) as f32 * 0.5);
             builder.translate(start);
             for i in 0..(leaflets - 2) {
                 let prog = 1.0 - i as f32 / leaflets as f32;
                 let l = l0 * prog * leaflet_len;
                 let a = dir * a0 * prog;
-                let step = Vec2::new(c0, a);
-                //builder.rotate(-curve * 2.0 * dir); // TODO: rotation can be better controlled. However, I like the current ones since they have more imperfections
+                let step = Vec2::new(0.0, a);
+                builder.rotate(-curve * 2.0 * dir); // TODO: rotation can be better controlled. However, I like the current ones since they have more imperfections
                 let slant = settings.slant;
                 let thinning = settings.thinning;
                 let stomp = settings.stomp;
@@ -60,7 +59,7 @@ pub fn fern_mesh(settings: &FernSettings, part: FernPart) -> MyMesh {
                 }
 
                 if *part == FernPart::LeafletBottom {
-                    let l2 = -(l - 2.0 * c0);
+                    let l2 = -l;
                     builder
                         .begin_here()
                         .quadratic_bezier_to(
