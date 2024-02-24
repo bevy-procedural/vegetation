@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use components::*;
 use fern::{fern_mesh, FernPart};
-pub use setup::setup_vegetation;
 pub mod fern;
 mod setup;
 
@@ -47,6 +46,14 @@ pub fn update_vegetation(
 }
 
 #[no_mangle]
-pub fn add_plugin(app: &mut App) {
-    app.add_systems(Startup, setup_vegetation); //.add_systems(Startup, setup);
+pub fn make_fern_material(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
+    images: &mut ResMut<Assets<Image>>,
+) -> (
+    bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial>,
+    Mesh,
+) {
+    setup::make_fern_material_internal(commands, meshes, materials, images)
 }

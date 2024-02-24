@@ -1,5 +1,4 @@
 use bevy::{
-    pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
     render::{
         mesh::PrimitiveTopology,
@@ -7,11 +6,10 @@ use bevy::{
         render_resource::{
             Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
         },
-        view::{NoFrustumCulling, RenderLayers},
+        view::RenderLayers,
     },
 };
 use components::*;
-use std::f32::consts::PI;
 
 pub fn render_to_texture(
     width: u32,
@@ -131,14 +129,13 @@ pub fn render_texture(
     return img;
 }
 
-pub fn setup_vegetation(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FernMaterial>>>,
-    mut materials3: ResMut<Assets<ColorMaterial>>,
-    mut materials2: ResMut<Assets<StandardMaterial>>,
-    mut images: ResMut<Assets<Image>>,
-) {
+#[no_mangle]
+pub fn make_fern_material_internal(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
+    images: &mut ResMut<Assets<Image>>,
+) -> (bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial>, Mesh) {
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip, RenderAssetUsages::all());
     let count = 40 * 12;
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0., 0., 0.]].repeat(count));
@@ -154,10 +151,10 @@ pub fn setup_vegetation(
     let fern = Some(render_texture(
         512,
         2048,
-        &mut commands,
-        &mut meshes,
-        &mut materials3,
-        &mut images,
+        commands,
+        meshes,
+        materials,
+        images,
         [
             Color::rgb(0.1, 0.2, 0.0),
             Color::rgb(0.05, 0.3, 0.0),
@@ -182,7 +179,7 @@ pub fn setup_vegetation(
         2,device
     ));*/
 
-    let material = ExtendedMaterial::<StandardMaterial, FernMaterial> {
+    let material = bevy::pbr::ExtendedMaterial::<StandardMaterial, FernMaterial> {
         base: StandardMaterial {
             base_color_texture: fern,
             normal_map_texture: fern_normal,
@@ -196,97 +193,5 @@ pub fn setup_vegetation(
         extension: FernMaterial { time: 0.0 },
     };
 
-    // TODO: use instancing https://github.com/bevyengine/bevy/blob/release-0.12.1/examples/shader/shader_instancing.rs#L104
-
-    for i in 0..30 {
-        let s = (i as f32 * 100.0).sin() + 2.0;
-
-        commands.spawn((
-            MaterialMeshBundle {
-                mesh: meshes.add(mesh.clone()),
-                transform: Transform::from_xyz(
-                    ((1012.0 * i as f32).sin() * 100000.0) % 10.0,
-                    s / 2.0,
-                    ((432.0 * i as f32).sin() * 100000.0) % 10.0,
-                )
-                .with_scale(Vec3::splat(s)),
-                material: materials.add(material.clone()),
-                ..default()
-            },
-            // NOTE: Frustum culling is done based on the Aabb of the Mesh and the GlobalTransform.
-            // As the cube is at the origin, if its Aabb moves outside the view frustum, all the
-            // instanced cubes will be culled.
-            // The InstanceMaterialData contains the 'GlobalTransform' information for this custom
-            // instancing, and that is not taken into account with the built-in frustum culling.
-            // We must disable the built-in frustum culling by adding the `NoFrustumCulling` marker
-            // component to avoid incorrect culling.
-            NoFrustumCulling,
-        ));
-    }
-
-    commands.spawn((PbrBundle {
-        mesh: meshes.add(Mesh::from(Plane3d::new(Vec3::new(0.0, 1.0, 0.0)))),
-        material: materials2.add(StandardMaterial {
-            base_color: Color::rgb(0.5, 0.5, 0.4),
-            ..default()
-        }),
-        transform: Transform::from_scale(Vec3::splat(100.0)),
-        ..default()
-    },));
-
-    
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(Cylinder::default())),
-        material: materials2.add(StandardMaterial {
-            base_color: Color::rgb(0.5, 0.5, 0.5),
-            ..default()
-        }),
-        transform: Transform::from_xyz(-0.6, 0.7, 1.4),
-        ..default()
-    });
-
-    commands.insert_resource(AmbientLight {
-        color: Color::WHITE,
-        brightness: 0.1,
-    });
-
-    /*commands.spawn(PointLightBundle {
-        point_light: PointLight {
-            color: Color::rgb(1.0, 1.0, 1.0),
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_xyz(3.0, 3.0, 0.0),
-        ..default()
-    });*/
-
-    commands.spawn(DirectionalLightBundle {
-        directional_light: DirectionalLight {
-            color: Color::WHITE,
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform {
-            translation: Vec3::new(0.0, 2.0, 0.0),
-            rotation: Quat::from_rotation_x(-PI / 3.),
-            ..default()
-        },
-        // High-Quality Shadows!
-        cascade_shadow_config: CascadeShadowConfigBuilder {
-            num_cascades: 4,
-            minimum_distance: 0.001,
-            maximum_distance: 30.0,
-            first_cascade_far_bound: 10.0,
-            overlap_proportion: 0.2,
-
-            ..default()
-        }
-        .into(),
-        ..Default::default()
-    });
-
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(2.0, 3.0, 2.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    });
+    return (material, mesh);
 }

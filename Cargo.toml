@@ -49,6 +49,7 @@ bevy-inspector-egui = "0.23.2"
 procedural-meshes = { path = "../meshes" }
 hot-lib-reloader = "0.7.0"
 components = { path = "./components" }
+bevy_panorbit_camera = "0.14.0"
 
 [features]
 default = []

@@ -814,6 +814,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_panorbit_camera"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eaf9b6fb5c5e024aa3f8633b8316e0664b46f5328ad64865c0e3fdd6eb1f327e"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_pbr"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1437,6 +1446,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_panorbit_camera",
  "hot-lib-reloader",
  "procedural-meshes",
 ]
@@ -1678,6 +1688,7 @@ version = "0.0.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_panorbit_camera",
  "components",
  "hot-lib-reloader",
  "procedural-meshes",
@@ -3287,6 +3298,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_panorbit_camera",
  "components",
  "hot-lib-reloader",
  "procedural-meshes",
