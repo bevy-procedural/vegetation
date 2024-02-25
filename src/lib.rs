@@ -1,9 +1,7 @@
 use bevy::prelude::*;
 use components::*;
 use fern::{fern_mesh, FernPart};
-use gpu2cpu::ImageExportSource;
 pub mod fern;
-mod gpu2cpu;
 mod setup;
 
 #[no_mangle]

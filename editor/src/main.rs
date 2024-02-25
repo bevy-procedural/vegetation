@@ -101,8 +101,7 @@ fn setup_scene(
         &mut commands,
         &mut meshes,
         &mut materials3,
-        &mut images,
-        &mut export_sources,
+        &mut images
     );
     let mesh_handle = meshes.add(mesh);
     let material_handle = materials.add(material);

@@ -42,9 +42,7 @@ unsafe_op_in_unsafe_fn = "warn"
 workspace = true
 
 [dependencies]
-bevy = { version = "0.13.0", default-features = false, features = [
-    "basis-universal",
-] }
+bevy = { version = "0.13.0", default-features = false }
 bevy-inspector-egui = "0.23.2"
 procedural-meshes = { path = "../meshes" }
 hot-lib-reloader = "0.7.0"
@@ -52,6 +50,7 @@ components = { path = "./components" }
 bevy_panorbit_camera = "0.14.0"
 futures-lite = "2.2.0"
 futures = "0.3.30"
+render-to-texture = "0.1.1"
 
 [features]
 default = []

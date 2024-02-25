@@ -1,12 +1,29 @@
 # Bevy Procedural: Vegetation
 
+<p align="center">
+  <a href="https://crates.io/crates/procedural-vegetation">
+      <img src="https://img.shields.io/crates/v/procedural-vegetation.svg" alt="crates.io">
+  </a>
+  <a href="https://github.com/bevy-procedural/vegetation/actions">
+      <img src="https://github.com/bevy-procedural/vegetation/actions/workflows/rust.yml/badge.svg" alt="Build Status">
+  </a>
+  <a href="https://docs.rs/procedural-vegetation">
+      <img src="https://docs.rs/procedural-vegetation/badge.svg" alt="documentation">
+  </a>
+   <a href="https://bevyengine.org/learn/book/plugin-development/#main-branch-tracking">
+      <img src="https://img.shields.io/badge/Bevy%20tracking-1.3-lightblue" alt="crates.io">
+  </a>
+</p>
+
 The objective of the [Bevy Procedural Project](https://bevy-procedural.org) is to furnish a comprehensive suite of packages for the generation of procedural graphics, unified by a consistent API.
 
 [Procedural Vegetation](https://bevy-procedural.org/begetation) is concerned with generating procedural vegetation in 3d and 2d using realistic as well as more stylized approaches.
 
 Run the editor example using `cargo watch -w editor/src -w src -x "run -p editor"` or `cargo runcc -c runcc-windows.yml`.
 
-## WARNING: This repository is practically empty
+## WARNING
+
+This repository is a very early work in progress and is not yet ready for use.
 
 The Bevy Procedural ecosystem is presently in its nascent phase. Expect frequent API modifications as it is under active development, with many features yet to be implemented. We highly encourage contributions to enrich the project!
 

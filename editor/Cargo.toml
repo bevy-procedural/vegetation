@@ -6,15 +6,14 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
-bevy = { version = "0.13.0", default-features = false, features = [
-    "basis-universal",
-] }
+bevy = { version = "0.13.0", default-features = false }
 components = { path = "../components" }
 procedural-vegetation = { path = "../" }
 procedural-meshes = { path = "../../meshes" }
 bevy-inspector-egui = "0.23.2"
 hot-lib-reloader = "0.7.0"
 bevy_panorbit_camera = "0.14.0"
+render-to-texture = "0.1.1"
 
 [features]
 default = []
