@@ -2,9 +2,6 @@ use bevy::prelude::*;
 use components::*;
 use fern::{fern_mesh, FernPart};
 pub mod fern;
-pub mod plugin;
-mod setup;
-pub use setup::{make_fern_material, make_fern_mesh, render_texture};
 
 #[no_mangle]
 pub fn update_vegetation(

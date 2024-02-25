@@ -5,10 +5,16 @@ use bevy::{
     reflect::TypePath,
     render::{
         mesh::MeshVertexBufferLayout,
-        render_resource::{AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError},
+        render_resource::{
+            AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
+        },
     },
 };
 use bevy_inspector_egui::{inspector_options::ReflectInspectorOptions, InspectorOptions};
+mod plugin;
+mod setup;
+pub use plugin::VegetationPlugin;
+pub use setup::{make_fern_material, make_fern_mesh, render_texture};
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct FernMaterial {

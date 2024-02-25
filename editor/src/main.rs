@@ -1,8 +1,7 @@
 use bevy::{
-    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    diagnostic::FrameTimeDiagnosticsPlugin,
     pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
-    render::view::NoFrustumCulling,
     window::WindowResolution,
 };
 use bevy_inspector_egui::quick::FilterQueryInspectorPlugin;
@@ -63,7 +62,7 @@ pub fn main() {
     })*/
     .add_plugins((
         MaterialPlugin::<ExtendedMaterial<StandardMaterial, FernMaterial>>::default(),
-        procedural_vegetation::plugin::VegetationPlugin,
+        VegetationPlugin,
     ))
     .register_type::<FernSettings>()
     .add_systems(Startup, setup_scene)
@@ -84,19 +83,18 @@ pub fn main() {
 fn setup_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FernMaterial>>>,
-    mut materials3: ResMut<Assets<ColorMaterial>>,
-    mut materials2: ResMut<Assets<StandardMaterial>>,
+    mut color_materials: ResMut<Assets<ColorMaterial>>,
+    mut standard_materials: ResMut<Assets<StandardMaterial>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     // TODO: use instancing https://github.com/bevyengine/bevy/blob/release-0.12.1/examples/shader/shader_instancing.rs#L104
 
-    procedural_vegetation::render_texture(
+    render_texture(
         2048,
         512,
         &mut commands,
         &mut meshes,
-        &mut materials3,
+        &mut color_materials,
         &mut images,
         [
             Color::rgb(0.1, 0.2, 0.0),
@@ -106,10 +104,9 @@ fn setup_scene(
         1,
     );
 
-
     commands.spawn((PbrBundle {
         mesh: meshes.add(Mesh::from(Plane3d::new(Vec3::new(0.0, 1.0, 0.0)))),
-        material: materials2.add(StandardMaterial {
+        material: standard_materials.add(StandardMaterial {
             base_color: Color::rgb(0.5, 0.5, 0.4),
             ..default()
         }),
@@ -119,7 +116,7 @@ fn setup_scene(
 
     commands.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(Cylinder::default())),
-        material: materials2.add(StandardMaterial {
+        material: standard_materials.add(StandardMaterial {
             base_color: Color::rgb(0.5, 0.5, 0.5),
             ..default()
         }),

@@ -1,5 +1,5 @@
 use bevy::{pbr::ExtendedMaterial, prelude::*, render::view::NoFrustumCulling};
-use components::{FernMaterial, FernSettings};
+use super::{FernMaterial, FernSettings};
 use render_to_texture::{RenderToTexturePlugin, RenderToTextureTasks};
 
 use crate::{make_fern_material, setup::make_fern_mesh};

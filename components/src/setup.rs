@@ -1,8 +1,8 @@
+use super::{FernMaterial, FernSettings};
 use bevy::{
     prelude::*,
     render::{mesh::PrimitiveTopology, render_asset::RenderAssetUsages, view::RenderLayers},
 };
-use components::*;
 use render_to_texture::create_render_texture;
 
 pub fn render_texture(
