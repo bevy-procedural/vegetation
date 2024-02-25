@@ -1,13 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{
-        mesh::PrimitiveTopology,
-        render_asset::RenderAssetUsages,
-        render_resource::{
-            Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-        },
-        view::RenderLayers,
-    },
+    render::{mesh::PrimitiveTopology, render_asset::RenderAssetUsages, view::RenderLayers},
 };
 use components::*;
 use render_to_texture::create_render_texture;
@@ -21,7 +14,6 @@ pub fn render_texture(
     images: &mut ResMut<Assets<Image>>,
     colors: [Color; 3],
     layer: u8,
-    //export_sources: &mut ResMut<Assets<ImageExportSource>>,
 ) -> Handle<Image> {
     let mut settings = FernSettings {
         width,
@@ -29,13 +21,12 @@ pub fn render_texture(
         ..default()
     };
 
-    let (img, camera_id) = create_render_texture(width, height, commands, images, layer, true);
+    let (img, _) = create_render_texture(width, height, commands, images, layer, true);
     let layer = RenderLayers::layer(layer);
     let mesh = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0)));
     let mesh2 = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0)));
     let mesh3 = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0)));
     settings.meshes = vec![mesh.id(), mesh2.id(), mesh3.id()];
-    settings.camera = Some(camera_id);
     settings.render_target = Some(img.clone());
 
     commands
@@ -70,25 +61,10 @@ pub fn render_texture(
             ));
         });
 
-    /* commands.spawn(ImageExportBundle {
-        source: export_sources.add(img.clone()),
-        ..default()
-    });*/
-
     return img;
 }
 
-#[no_mangle]
-pub fn make_fern_material_internal(
-    commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<ColorMaterial>>,
-    images: &mut ResMut<Assets<Image>>,
-    //export_sources: &mut ResMut<Assets<ImageExportSource>>,
-) -> (
-    bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial>,
-    Mesh,
-) {
+pub fn make_fern_mesh() -> Mesh {
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleStrip, RenderAssetUsages::all());
     let count = 40 * 12;
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vec![[0., 0., 0.]].repeat(count));
@@ -99,43 +75,16 @@ pub fn make_fern_material_internal(
         Mesh::ATTRIBUTE_TANGENT,
         vec![[0., 0., 0., 0.]].repeat(count),
     );
+    return mesh;
+}
 
-    // Some(asset_server.load("test.basis"));
-    let fern = Some(render_texture(
-        512,
-        2048,
-        commands,
-        meshes,
-        materials,
-        images,
-        [
-            Color::rgb(0.1, 0.2, 0.0),
-            Color::rgb(0.05, 0.3, 0.0),
-            Color::rgb(0.05, 0.36, 0.05),
-        ],
-        1,
-        //export_sources,
-    ));
-
-    let fern_normal = None;
-    /*Some(render_texture(
-        512,
-        2048,
-        &mut commands,
-        &mut meshes,
-        &mut materials3,
-        &mut images,
-        [
-            Color::rgb(0.0, 0.0, 1.0),
-            Color::rgb(0.4, 0.0, 1.0),
-            Color::rgb(0.0, 0.0, 1.0),
-        ],
-        2,device
-    ));*/
-
+pub fn make_fern_material(
+    fern_color: Option<Handle<Image>>,
+    fern_normal: Option<Handle<Image>>,
+) -> bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial> {
     let material = bevy::pbr::ExtendedMaterial::<StandardMaterial, FernMaterial> {
         base: StandardMaterial {
-            base_color_texture: fern,
+            base_color_texture: fern_color,
             normal_map_texture: fern_normal,
             metallic: 0.4,
             perceptual_roughness: 0.2,
@@ -147,5 +96,5 @@ pub fn make_fern_material_internal(
         extension: FernMaterial { time: 0.0 },
     };
 
-    return (material, mesh);
+    return material;
 }

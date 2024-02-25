@@ -61,14 +61,15 @@ pub fn main() {
         global: true,
         default_color: Color::WHITE,
     })*/
-    .add_plugins(MaterialPlugin::<
-        ExtendedMaterial<StandardMaterial, FernMaterial>,
-    >::default())
+    .add_plugins((
+        MaterialPlugin::<ExtendedMaterial<StandardMaterial, FernMaterial>>::default(),
+        procedural_vegetation::plugin::VegetationPlugin,
+    ))
     .register_type::<FernSettings>()
     .add_systems(Startup, setup_scene)
     .add_plugins((
         FrameTimeDiagnosticsPlugin,
-        LogDiagnosticsPlugin::default(),
+        //LogDiagnosticsPlugin::default(),
         FilterQueryInspectorPlugin::<With<FernSettings>>::default(),
         PanOrbitCameraPlugin,
     ));
@@ -76,15 +77,8 @@ pub fn main() {
     #[cfg(feature = "reload")]
     app.add_systems(PreUpdate, reload_after_change);
 
-    app.add_systems(
-        Update,
-        (
-            update_vegetation_off,
-            update_vegetation.after(update_vegetation_off),
-            bevy::window::close_on_esc,
-        ),
-    )
-    .run();
+    app.add_systems(Update, (update_vegetation, bevy::window::close_on_esc))
+        .run();
 }
 
 fn setup_scene(
@@ -93,44 +87,25 @@ fn setup_scene(
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FernMaterial>>>,
     mut materials3: ResMut<Assets<ColorMaterial>>,
     mut materials2: ResMut<Assets<StandardMaterial>>,
-    mut images: ResMut<Assets<Image>>
+    mut images: ResMut<Assets<Image>>,
 ) {
     // TODO: use instancing https://github.com/bevyengine/bevy/blob/release-0.12.1/examples/shader/shader_instancing.rs#L104
 
-    let (material, mesh) = make_fern_material(
+    procedural_vegetation::render_texture(
+        2048,
+        512,
         &mut commands,
         &mut meshes,
         &mut materials3,
-        &mut images
+        &mut images,
+        [
+            Color::rgb(0.1, 0.2, 0.0),
+            Color::rgb(0.05, 0.3, 0.0),
+            Color::rgb(0.05, 0.36, 0.05),
+        ],
+        1,
     );
-    let mesh_handle = meshes.add(mesh);
-    let material_handle = materials.add(material);
 
-    for i in 0..30 {
-        let s = (i as f32 * 100.0).sin() + 2.0;
-
-        commands.spawn((
-            MaterialMeshBundle {
-                mesh: mesh_handle.clone(),
-                transform: Transform::from_xyz(
-                    ((1012.0 * i as f32).sin() * 100000.0) % 10.0,
-                    s / 2.0,
-                    ((432.0 * i as f32).sin() * 100000.0) % 10.0,
-                )
-                .with_scale(Vec3::splat(s)),
-                material: material_handle.clone(),
-                ..default()
-            },
-            // NOTE: Frustum culling is done based on the Aabb of the Mesh and the GlobalTransform.
-            // As the cube is at the origin, if its Aabb moves outside the view frustum, all the
-            // instanced cubes will be culled.
-            // The InstanceMaterialData contains the 'GlobalTransform' information for this custom
-            // instancing, and that is not taken into account with the built-in frustum culling.
-            // We must disable the built-in frustum culling by adding the `NoFrustumCulling` marker
-            // component to avoid incorrect culling.
-            NoFrustumCulling,
-        ));
-    }
 
     commands.spawn((PbrBundle {
         mesh: meshes.add(Mesh::from(Plane3d::new(Vec3::new(0.0, 1.0, 0.0)))),
@@ -148,7 +123,7 @@ fn setup_scene(
             base_color: Color::rgb(0.5, 0.5, 0.5),
             ..default()
         }),
-        transform: Transform::from_xyz(-0.6, 0.7, 1.4),
+        transform: Transform::from_xyz(-0.6, 0.7, 1.4).with_scale(Vec3::new(1.0, 2.0, 1.0)),
         ..default()
     });
 
