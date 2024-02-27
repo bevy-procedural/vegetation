@@ -1,5 +1,5 @@
 [package]
-name = "procedural-vegetation"
+name = "bevy_procedural_vegetation"
 description = "A procedural vegetation system for the Bevy game engine."
 version = "0.1.0"
 edition = "2021"
@@ -42,9 +42,9 @@ unsafe_op_in_unsafe_fn = "warn"
 workspace = true
 
 [dependencies]
-bevy = { version = "0.13.0", default-features = false }
+bevy = { version = "0.13.0", default-features = false, features = [] }
 bevy-inspector-egui = "0.23.2"
-procedural-meshes = { path = "../meshes" }
+bevy_procedural_meshes = "0.1.1"
 hot-lib-reloader = "0.7.0"
 components = { path = "./components" }
 bevy_panorbit_camera = "0.14.0"
@@ -54,7 +54,7 @@ render-to-texture = "0.1.1"
 
 [features]
 default = []
-dynamic = ["components/dynamic", "bevy/file_watcher"]
+dynamic = ["components/dynamic", "bevy/file_watcher", "bevy/multi-threaded"]
 
 [[example]]
 name = "simple"
@@ -67,13 +67,16 @@ doc-scrape-examples = true
 #debug = 1
 
 # Enable a small amount of optimization in debug mode
-[profile.dev]
+[profile.fast-dev]
+inherits = "dev"
 opt-level = 1
 
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
-[profile.dev.package."*"]
+[profile.fast-dev.package."*"]
+inherits = "dev"
 opt-level = 3
 
-[profile.dev.package.gfx-backend-vulkan]
+[profile.fast-dev.package.gfx-backend-vulkan]
+inherits = "dev"
 opt-level = 3
 debug-assertions = false

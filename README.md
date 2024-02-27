@@ -1,14 +1,14 @@
 # Bevy Procedural: Vegetation
 
 <p align="center">
-  <a href="https://crates.io/crates/procedural-vegetation">
-      <img src="https://img.shields.io/crates/v/procedural-vegetation.svg" alt="crates.io">
+  <a href="https://crates.io/crates/bevy_procedural_vegetation">
+      <img src="https://img.shields.io/crates/v/bevy_procedural_vegetation.svg" alt="crates.io">
   </a>
   <a href="https://github.com/bevy-procedural/vegetation/actions">
       <img src="https://github.com/bevy-procedural/vegetation/actions/workflows/rust.yml/badge.svg" alt="Build Status">
   </a>
-  <a href="https://docs.rs/procedural-vegetation">
-      <img src="https://docs.rs/procedural-vegetation/badge.svg" alt="documentation">
+  <a href="https://docs.rs/bevy_procedural_vegetation">
+      <img src="https://docs.rs/bevy_procedural_vegetation/badge.svg" alt="documentation">
   </a>
    <a href="https://bevyengine.org/learn/book/plugin-development/#main-branch-tracking">
       <img src="https://img.shields.io/badge/Bevy%20tracking-1.3-lightblue" alt="crates.io">

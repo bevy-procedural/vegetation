@@ -9,18 +9,18 @@ use bevy_panorbit_camera::*;
 use std::{env, f32::consts::PI};
 
 #[cfg(not(feature = "reload"))]
-pub use components::*;
-#[cfg(not(feature = "reload"))]
-use procedural_vegetation::*;
+use bevy_procedural_vegetation::*;
 #[cfg(feature = "reload")]
-use procedural_vegetation_hot::*;
+use bevy_procedural_vegetation_hot::*;
+#[cfg(not(feature = "reload"))]
+pub use components::*;
 #[cfg(feature = "reload")]
 #[hot_lib_reloader::hot_module(
     dylib = "procedural_vegetation",
     file_watch_debounce = 200,
     lib_dir = "target/debug"
 )]
-mod procedural_vegetation_hot {
+mod bevy_procedural_vegetation_hot {
     use bevy::prelude::*;
     pub use components::*;
     hot_functions_from_file!("src/lib.rs");
@@ -31,7 +31,7 @@ mod procedural_vegetation_hot {
 
 #[cfg(feature = "reload")]
 fn reload_after_change(mut query: Query<&mut FernSettings>) {
-    if procedural_vegetation_hot::was_updated() {
+    if bevy_procedural_vegetation_hot::was_updated() {
         println!("Reloading systems");
         for mut settings in query.iter_mut() {
             settings.version = settings.version + 1;

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use procedural_vegetation::*;
+use bevy_procedural_vegetation::*;
 
 fn main() {
     App::new()

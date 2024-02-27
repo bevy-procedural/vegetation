@@ -1,6 +1,6 @@
 [package]
 name = "editor"
-description = "An Egui-based editor for the procedural-vegetation crate"
+description = "An Egui-based editor for the bevy_procedural_vegetation crate"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 publish = false
@@ -8,8 +8,8 @@ publish = false
 [dependencies]
 bevy = { version = "0.13.0", default-features = false }
 components = { path = "../components" }
-procedural-vegetation = { path = "../" }
-procedural-meshes = { path = "../../meshes" }
+bevy_procedural_vegetation = { path = "../" }
+bevy_procedural_meshes = "0.1.1"
 bevy-inspector-egui = "0.23.2"
 hot-lib-reloader = "0.7.0"
 bevy_panorbit_camera = "0.14.0"
@@ -17,7 +17,7 @@ render-to-texture = "0.1.1"
 
 [features]
 default = []
-reload = ["components/dynamic", "bevy/file_watcher"]
+reload = ["components/dynamic", "bevy/file_watcher", "bevy/multi-threaded"]
 
 [lints]
 workspace = true
