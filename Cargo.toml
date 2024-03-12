@@ -13,7 +13,7 @@ documentation = "https://docs.bevy-procedural.org/vegetation"
 rust-version = "1.76.0"
 
 [lib]
-name = "procedural_vegetation"
+name = "bevy_procedural_vegetation"
 path = "src/lib.rs"
 crate-type = ["rlib", "dylib"]
 

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use components::*;
-use procedural_meshes::{fill::MyFill, mesh::MyMesh, *};
+use bevy_procedural_meshes::*;
 
 #[derive(Debug, Reflect, Component, PartialEq)]
 pub enum FernPart {
@@ -9,8 +9,8 @@ pub enum FernPart {
     LeafletBottom,
 }
 
-pub fn fern_mesh(settings: &FernSettings, part: FernPart) -> MyMesh {
-    let mut fill = MyFill::new(0.0001);
+pub fn fern_mesh(settings: &FernSettings, part: FernPart) -> PMesh<u16> {
+    let mut fill = PFill::new(0.0001);
     fill.draw(|builder| {
         let stem_w = settings.stem_w;
         let stem_w2 = settings.stem_w2;
@@ -30,7 +30,7 @@ pub fn fern_mesh(settings: &FernSettings, part: FernPart) -> MyMesh {
             curve: f32,
             l0: f32,
             dir: f32,
-            builder: &mut builder::Builder,
+            builder: &mut PBuilder,
             settings: &FernSettings,
             part: &FernPart,
         ) {
@@ -110,7 +110,7 @@ pub fn fern_mesh(settings: &FernSettings, part: FernPart) -> MyMesh {
         //builder.quadratic_bezier_to(point(0.0, 1.0), point(1.0, 1.0));
         //builder.quadratic_bezier_to(point(1.0, 0.0), point(0.0, 0.0));
     });
-    let mut fern = fill.build(false);
+    let mut fern = fill.build::<u16>(false);
     fern.translate(0.5, 0.0, 0.0)
         .scale(settings.width as f32, settings.height as f32 / 2.0, 1.0);
     return fern;
