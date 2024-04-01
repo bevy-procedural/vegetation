@@ -21,7 +21,7 @@ The objective of the [Bevy Procedural Project](https://bevy-procedural.org) is t
 
 Run the editor example using `cargo watch -w editor/src -w src -x "run -p editor --profile fast-dev"`.
 
-![Exemplary Fern](assets/ferns.png)
+![Exemplary Fern](./assets/ferns.png)
 
 ## WARNING
 
