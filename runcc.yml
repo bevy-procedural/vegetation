@@ -1,5 +1,0 @@
-commands:
-  bin: |
-    cargo watch -w editor/src -w components --features reload -p editor --profile fast-dev
-  lib: |
-    cargo watch -w src -w components -x "build --features dynamic --profile fast-dev"

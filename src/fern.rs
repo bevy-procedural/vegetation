@@ -1,6 +1,10 @@
 use bevy::prelude::*;
-use components::*;
-use bevy_procedural_meshes::*;
+use bevy_procedural_meshes::{
+    lyon::{FillBuilder, PBuilder, PFill},
+    *,
+};
+
+use crate::components::FernSettings;
 
 #[derive(Debug, Reflect, Component, PartialEq)]
 pub enum FernPart {
@@ -10,8 +14,27 @@ pub enum FernPart {
 }
 
 pub fn fern_mesh(settings: &FernSettings, part: FernPart) -> PMesh<u16> {
+    /*let mut fill = PFill::new(0.01);
+    fill.draw(|builder| {
+        builder.add_circle(Vec2::ZERO, 1.0, Winding::Positive);
+    });
+    let mut mesh = fill.build();
+    mesh.flip_yz();
+    return mesh;*/
+
     let mut fill = PFill::new(0.0001);
     fill.draw(|builder| {
+        // just a circle gives also a nice mesh!
+        //builder.add_circle(Vec2::ZERO, 1.0, Winding::Positive);
+
+        // Or a triangle
+        /*
+        builder.begin(Vec2::new(-1.0, 1.0));
+        builder.line_to(Vec2::new(1.0, -1.0));
+        builder.line_to(Vec2::new(1.0, 1.0));
+        builder.end(true);
+        */
+
         let stem_w = settings.stem_w;
         let stem_w2 = settings.stem_w2;
 
@@ -30,7 +53,7 @@ pub fn fern_mesh(settings: &FernSettings, part: FernPart) -> PMesh<u16> {
             curve: f32,
             l0: f32,
             dir: f32,
-            builder: &mut PBuilder,
+            builder: &mut PBuilder<FillBuilder>,
             settings: &FernSettings,
             part: &FernPart,
         ) {
@@ -106,12 +129,13 @@ pub fn fern_mesh(settings: &FernSettings, part: FernPart) -> PMesh<u16> {
             );
             px += l0 * leaflet_len * settings.leaflet_spacing * 0.5;
         }
-
-        //builder.quadratic_bezier_to(point(0.0, 1.0), point(1.0, 1.0));
-        //builder.quadratic_bezier_to(point(1.0, 0.0), point(0.0, 0.0));
     });
-    let mut fern = fill.build::<u16>(false);
-    fern.translate(0.5, 0.0, 0.0)
+    let mut fern = fill.build();
+    fern.translate(-0.5, 0.0, 0.0)
         .scale(settings.width as f32, settings.height as f32 / 2.0, 1.0);
+
+    //fern.flip_yz();
+    fern.scale(-1.0, 1.0, 1.0);
+
     return fern;
 }

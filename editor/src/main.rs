@@ -2,48 +2,20 @@ use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin,
     pbr::{CascadeShadowConfigBuilder, ExtendedMaterial},
     prelude::*,
+    render::{render_asset::RenderAssetUsages, Render},
     window::WindowResolution,
 };
 use bevy_inspector_egui::quick::FilterQueryInspectorPlugin;
 use bevy_panorbit_camera::*;
+use bevy_procedural_vegetation::{
+    components::{render_texture, FernMaterial, FernSettings, VegetationPlugin},
+    fern::{fern_mesh, FernPart},
+    *,
+};
 use std::{env, f32::consts::PI};
-
-#[cfg(not(feature = "reload"))]
-use bevy_procedural_vegetation::*;
-#[cfg(feature = "reload")]
-use bevy_procedural_vegetation_hot::*;
-#[cfg(not(feature = "reload"))]
-pub use components::*;
-#[cfg(feature = "reload")]
-#[hot_lib_reloader::hot_module(
-    dylib = "procedural_vegetation",
-    file_watch_debounce = 200,
-    lib_dir = "target/debug"
-)]
-mod bevy_procedural_vegetation_hot {
-    use bevy::prelude::*;
-    pub use components::*;
-    hot_functions_from_file!("src/lib.rs");
-
-    #[lib_updated]
-    pub fn was_updated() -> bool {}
-}
-
-#[cfg(feature = "reload")]
-fn reload_after_change(mut query: Query<&mut FernSettings>) {
-    if bevy_procedural_vegetation_hot::was_updated() {
-        println!("Reloading systems");
-        for mut settings in query.iter_mut() {
-            settings.version = settings.version + 1;
-        }
-    }
-}
 
 pub fn main() {
     env::set_var("RUST_BACKTRACE", "1"); // or "full"
-
-    #[cfg(feature = "reload")]
-    println!("Hello from the main module! This is a hot reloadable module.");
 
     let mut app = App::new();
 
@@ -73,11 +45,9 @@ pub fn main() {
         PanOrbitCameraPlugin,
     ));
 
-    #[cfg(feature = "reload")]
-    app.add_systems(PreUpdate, reload_after_change);
+    app.add_systems(Update, (update_vegetation, bevy::window::close_on_esc));
 
-    app.add_systems(Update, (update_vegetation, bevy::window::close_on_esc))
-        .run();
+    app.run();
 }
 
 fn setup_scene(
@@ -103,6 +73,19 @@ fn setup_scene(
         ],
         1,
     );
+
+    /*
+    let fern = fern_mesh(&FernSettings::default(), FernPart::Stem);
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(fern.to_bevy(RenderAssetUsages::all())), // Mesh::from(Plane3d::new(Vec3::new(0.0, 1.0, 0.0))
+        material: standard_materials.add(StandardMaterial {
+            base_color: Color::rgb(1.0, 0.0, 0.0),
+            ..default()
+        }),
+        transform: Transform::from_scale(Vec3::splat(0.01))
+            .with_translation(Vec3::new(0.5, 0.5, 0.5)),
+        ..default()
+    });*/
 
     commands.spawn((PbrBundle {
         mesh: meshes.add(Mesh::from(Plane3d::new(Vec3::new(0.0, 1.0, 0.0)))),

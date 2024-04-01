@@ -1,6 +1,7 @@
 use bevy::prelude::*;
-use components::*;
+use components::FernSettings;
 use fern::{fern_mesh, FernPart};
+pub mod components;
 pub mod fern;
 
 #[no_mangle]

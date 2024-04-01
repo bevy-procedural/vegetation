@@ -18,7 +18,7 @@ path = "src/lib.rs"
 crate-type = ["rlib", "dylib"]
 
 [workspace]
-members = ["editor", "components"]
+members = ["editor"]
 
 [workspace.lints.clippy]
 type_complexity = "allow"
@@ -42,19 +42,19 @@ unsafe_op_in_unsafe_fn = "warn"
 workspace = true
 
 [dependencies]
-bevy = { version = "0.13.0", default-features = false, features = [] }
-bevy-inspector-egui = "0.23.2"
-bevy_procedural_meshes = "0.1.1"
-hot-lib-reloader = "0.7.0"
-components = { path = "./components" }
-bevy_panorbit_camera = "0.14.0"
-futures-lite = "2.2.0"
-futures = "0.3.30"
-render-to-texture = "0.1.1"
+bevy = { version = "^0.13.1", default-features = false, features = [
+    "bevy_pbr",
+    "bevy_sprite",
+    "tonemapping_luts",
+] }
+bevy_procedural_meshes = "^0.13.1"
+render-to-texture = "^0.13.0"
+bevy-inspector-egui = "^0.23.4"
+image = "0.25.1"
 
 [features]
 default = []
-dynamic = ["components/dynamic", "bevy/file_watcher", "bevy/multi-threaded"]
+dynamic = ["bevy/dynamic_linking", "bevy/file_watcher"]
 
 [[example]]
 name = "simple"

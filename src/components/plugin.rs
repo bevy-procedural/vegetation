@@ -1,8 +1,8 @@
-use bevy::{pbr::ExtendedMaterial, prelude::*, render::view::NoFrustumCulling};
 use super::{FernMaterial, FernSettings};
+use bevy::{pbr::ExtendedMaterial, prelude::*, render::view::NoFrustumCulling};
 use render_to_texture::{RenderToTexturePlugin, RenderToTextureTasks};
 
-use crate::{make_fern_material, setup::make_fern_mesh};
+use super::{make_fern_material, setup::make_fern_mesh};
 
 pub struct VegetationPlugin;
 
@@ -33,7 +33,7 @@ pub fn create_tasks(
         "fern".to_string(),
         2048,
         512,
-        true,
+        false,
         &mut commands,
         &mut images,
         true,
@@ -52,7 +52,7 @@ fn wait_for_texture(
     _query: Query<&FernSettings>,
     mut macro_fern_query: Query<(Entity, &FernMacroMesh)>,
 ) {
-    if let Some(image) = render_to_texture_tasks.image("fern", false) {
+    if let Some(img) = render_to_texture_tasks.image("fern", false) {
         // TODO: don't recreate the mesh! Better just change the texture. But how?
         /* for settings in query.iter() {
             println!("Got the image");
@@ -62,12 +62,28 @@ fn wait_for_texture(
 
         }*/
 
+        // Save it to disk
+        /*{
+            let width = img.width();
+            let height = img.height();
+            let mut writer = std::io::BufWriter::new(std::fs::File::create("test.png").unwrap());
+            image::write_buffer_with_format(
+                &mut writer,
+                &img.data.clone(),
+                height,
+                width,
+                image::ColorType::Rgba8,
+                image::ImageFormat::Png,
+            )
+            .unwrap();
+        }*/
+
         // remove old
         for (entity, _) in macro_fern_query.iter_mut() {
             commands.entity(entity).despawn();
         }
 
-        let material = make_fern_material(Some(images.add(image)), None);
+        let material = make_fern_material(Some(images.add(img)), None);
         let mesh = make_fern_mesh();
         let mesh_handle = meshes.add(mesh);
         let material_handle = materials.add(material);

@@ -84,6 +84,7 @@ pub fn make_fern_material(
 ) -> bevy::pbr::ExtendedMaterial<StandardMaterial, FernMaterial> {
     let material = bevy::pbr::ExtendedMaterial::<StandardMaterial, FernMaterial> {
         base: StandardMaterial {
+            //base_color: Color::rgb(0.5, 0.5, 0.4),
             base_color_texture: fern_color,
             normal_map_texture: fern_normal,
             metallic: 0.4,

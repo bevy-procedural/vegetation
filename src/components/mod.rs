@@ -1,4 +1,3 @@
-/// To make changes to the systems not break the type ids of components, making a components sub-crate is recommended. This way, they are a separate compilation unit. Otherwise component queries might suddenly be empty after code changes.
 use bevy::{
     pbr::{MaterialExtension, MaterialExtensionKey, MaterialExtensionPipeline},
     prelude::*,

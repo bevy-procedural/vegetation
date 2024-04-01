@@ -19,7 +19,9 @@ The objective of the [Bevy Procedural Project](https://bevy-procedural.org) is t
 
 [Procedural Vegetation](https://bevy-procedural.org/begetation) is concerned with generating procedural vegetation in 3d and 2d using realistic as well as more stylized approaches.
 
-Run the editor example using `cargo watch -w editor/src -w src -x "run -p editor"` or `cargo runcc -c runcc-windows.yml`.
+Run the editor example using `cargo watch -w editor/src -w src -x "run -p editor --profile fast-dev"`.
+
+![Exemplary Fern](assets/ferns.png)
 
 ## WARNING
 
