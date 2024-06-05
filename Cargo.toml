@@ -42,7 +42,7 @@ unsafe_op_in_unsafe_fn = "warn"
 workspace = true
 
 [dependencies]
-bevy = { version = "^0.13.1", default-features = false, features = [
+bevy = { version = "^0.13.2", default-features = false, features = [
     "bevy_pbr",
     "bevy_sprite",
     "tonemapping_luts",
@@ -80,3 +80,9 @@ opt-level = 3
 inherits = "dev"
 opt-level = 3
 debug-assertions = false
+
+[profile.wasm-release]
+inherits = "release"
+opt-level = "z"
+lto = "thin"
+codegen-units = 1
